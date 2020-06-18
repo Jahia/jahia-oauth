@@ -87,25 +87,33 @@
     <reference id="ehCacheProvider" interface="org.jahia.services.cache.CacheProvider"/>
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
 
-    <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl" interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthService"/>
-    <service id="JahiaOAuthCacheServiceOsgi" ref="jahiaOAuthCacheServiceImpl" interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthCacheService"/>
+    <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"
+             interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthService"/>
+    <service id="JahiaOAuthCacheServiceOsgi" ref="jahiaOAuthCacheServiceImpl"
+             interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthCacheService"/>
 
-    <bean class="org.jahia.modules.jahiaoauth.action.ManageConnectorsSettings">
-        <property name="name" value="manageConnectorsSettingsAction"/>
-        <property name="requiredPermission" value="canSetupJahiaOAuth"/>
-    </bean>
+    <service interface="org.jahia.bin.Action">
+        <bean class="org.jahia.modules.jahiaoauth.action.ManageConnectorsSettings">
+            <property name="name" value="manageConnectorsSettingsAction"/>
+            <property name="requiredPermission" value="canSetupJahiaOAuth"/>
+        </bean>
+    </service>
 
-    <bean class="org.jahia.modules.jahiaoauth.action.ManageMappers">
-        <property name="name" value="manageMappersAction"/>
-        <property name="requiredPermission" value="canSetupJahiaOAuth"/>
-        <property name="jahiaOAuthService" ref="jahiaOAuthServiceImpl"/>
-    </bean>
+    <service interface="org.jahia.bin.Action">
+        <bean class="org.jahia.modules.jahiaoauth.action.ManageMappers">
+            <property name="name" value="manageMappersAction"/>
+            <property name="requiredPermission" value="canSetupJahiaOAuth"/>
+            <property name="jahiaOAuthService" ref="jahiaOAuthServiceImpl"/>
+        </bean>
+    </service>
 
-    <bean id="joaEHCacheManager" class="org.jahia.modules.jahiaoauth.impl.cache.EHCacheManagerImpl" init-method="init" destroy-method="destroy">
+    <bean id="joaEHCacheManager" class="org.jahia.modules.jahiaoauth.impl.cache.EHCacheManagerImpl" init-method="init"
+          destroy-method="destroy">
         <property name="ehCacheProvider" ref="ehCacheProvider"/>
     </bean>
 
-    <bean id="jahiaOAuthCacheServiceImpl" class="org.jahia.modules.jahiaoauth.impl.cache.JahiaOAuthCacheServiceImpl" init-method="initService">
+    <bean id="jahiaOAuthCacheServiceImpl" class="org.jahia.modules.jahiaoauth.impl.cache.JahiaOAuthCacheServiceImpl"
+          init-method="initService">
         <property name="defaultCacheService" ref="joaEHCacheManager"/>
         <property name="settingsBean" ref="settingsBean"/>
         <property name="bundleContext" ref="blueprintBundleContext"/>
@@ -114,8 +122,6 @@
     <bean class="org.jahia.modules.jahiaoauth.tag.JahiaOAuthFunctions">
         <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService"/>
     </bean>
-
-
 
 
 </blueprint>

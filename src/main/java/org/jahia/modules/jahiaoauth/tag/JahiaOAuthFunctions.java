@@ -64,7 +64,7 @@ public class JahiaOAuthFunctions {
         List<JahiaTemplatesPackage> jahiaTemplatesPackageList = jahiaTemplateManagerService.getInstalledModulesForSite(siteKey, false, true,false);
 
         for (JahiaTemplatesPackage jahiaTemplatesPackage : jahiaTemplatesPackageList) {
-            if (StringUtils.startsWith(path, jahiaTemplatesPackage.getIdWithVersion())) {
+            if (StringUtils.startsWith(path, jahiaTemplatesPackage.getRootFolderPath() + "/" + jahiaTemplatesPackage.getVersion())) {
                 return true;
             }
         }

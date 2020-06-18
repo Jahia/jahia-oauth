@@ -5,6 +5,7 @@
         icon: null,
         label: 'jahia-oauth:label',
         isSelectable: true,
+        requireModuleInstalledOnSite: 'jahia-oauth',
         iframeUrl: window.contextJsParameters.contextPath + '/cms/editframe/default/$lang/sites/$site-key.oauth-connector-site-settings.html?redirect=false'
     });
 })();
