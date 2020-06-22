@@ -49,8 +49,6 @@ import com.hazelcast.core.HazelcastInstance;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthCacheService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 
 import java.util.HashMap;
 
@@ -60,11 +58,8 @@ import java.util.HashMap;
 public class ClusteredCacheImpl implements JahiaOAuthCacheService {
     private HazelcastInstance hazelcastInstance;
 
-    public ClusteredCacheImpl(BundleContext bundleContext) {
-        ServiceReference sr = bundleContext.getServiceReference( "com.hazelcast.core.HazelcastInstance");
-        if (sr != null) {
-            this.hazelcastInstance = (HazelcastInstance) bundleContext.getService(sr);
-        }
+    public ClusteredCacheImpl(Object hazelcast) {
+        this.hazelcastInstance = (HazelcastInstance) hazelcast;
         Config config = hazelcastInstance.getConfig();
         MapConfig mapConfig = new MapConfig(JahiaOAuthConstants.JAHIA_OAUTH_USER_CACHE).setTimeToLiveSeconds(180);
         config.addMapConfig(mapConfig);

@@ -113,7 +113,7 @@
     </bean>
 
     <bean id="jahiaOAuthCacheServiceImpl" class="org.jahia.modules.jahiaoauth.impl.cache.JahiaOAuthCacheServiceImpl"
-          init-method="initService">
+          init-method="init" destroy-method="destroy">
         <property name="defaultCacheService" ref="joaEHCacheManager"/>
         <property name="settingsBean" ref="settingsBean"/>
         <property name="bundleContext" ref="blueprintBundleContext"/>

@@ -46,6 +46,9 @@ package org.jahia.modules.jahiaoauth.impl.cache;
 import org.jahia.api.settings.SettingsBean;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthCacheService;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import java.util.HashMap;
 
@@ -57,12 +60,36 @@ public class JahiaOAuthCacheServiceImpl implements JahiaOAuthCacheService {
     private JahiaOAuthCacheService service;
     private SettingsBean settingsBean;
     private BundleContext bundleContext;
+    private ServiceTracker<Object, Object> serviceTracker;
 
-    public void initService() {
+    public void init() {
+        service = defaultCacheService;
+
         if (settingsBean.isClusterActivated()) {
-            service = new ClusteredCacheImpl(bundleContext);
-        } else {
-            service = defaultCacheService;
+            serviceTracker = new ServiceTracker<>(bundleContext, "com.hazelcast.core.HazelcastInstance", new ServiceTrackerCustomizer<Object, Object>() {
+                @Override
+                public Object addingService(ServiceReference serviceReference) {
+                    service = new ClusteredCacheImpl(bundleContext.getService(serviceReference));
+                    return service;
+                }
+
+                @Override
+                public void modifiedService(ServiceReference serviceReference, Object o) {
+                    service = new ClusteredCacheImpl(bundleContext.getService(serviceReference));
+                }
+
+                @Override
+                public void removedService(ServiceReference serviceReference, Object o) {
+                    service = defaultCacheService;
+                }
+            });
+            serviceTracker.open();
+        }
+    }
+
+    public void destroy() {
+        if (serviceTracker != null) {
+            serviceTracker.close();
         }
     }
 

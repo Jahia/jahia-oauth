@@ -70,6 +70,7 @@
         <jahia-static-resources>/css,/javascript,/icons</jahia-static-resources>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
         <jahia-module-signature>MCwCFDq/2RYC07M++HXiuXmpIVnbqv1kAhQuM+lWn3tRbm+PGETKUyOaef719g==</jahia-module-signature>
+        <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
     </properties>
 
     <distributionManagement>
@@ -160,6 +161,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <DynamicImport-Package>com.hazelcast.config;version="[3.7,4)",com.hazelcast.core;version="[3.7,4)"</DynamicImport-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
