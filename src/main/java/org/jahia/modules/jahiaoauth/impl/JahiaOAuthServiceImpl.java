@@ -44,7 +44,7 @@
 package org.jahia.modules.jahiaoauth.impl;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.builder.api.BaseApi;
+import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
@@ -69,7 +69,7 @@ import java.util.*;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
 
-    private Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap;
+    private Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaOAuthCacheService jahiaOAuthCacheService;
 
     @Override
@@ -80,9 +80,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     @Override
     public String getAuthorizationUrl(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String sessionId, Map<String, String> additionalParams) throws RepositoryException {
         JCRNodeWrapper connectorNode = jahiaOAuthNode.getNode(connectorServiceName);
-        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName, sessionId);
+        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName);
 
-        return service.getAuthorizationUrl(additionalParams);
+        return service.createAuthorizationUrlBuilder().state(sessionId).build();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     @Override
     public Map<String, Object> refreshAccessToken(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String refreshToken) throws Exception {
         JCRNodeWrapper connectorNode = jahiaOAuthNode.getNode(connectorServiceName);
-        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName, null);
+        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName);
         OAuth2AccessToken accessToken = service.refreshAccessToken(refreshToken);
         return extractAccessTokenData(accessToken);
     }
@@ -106,7 +106,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     @Override
     public Map<String, Object> requestUserData(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String mapperServiceName, String refreshToken) throws Exception {
         JCRNodeWrapper connectorNode = jahiaOAuthNode.getNode(connectorServiceName);
-        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName, null);
+        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName);
         OAuth2AccessToken accessToken = service.refreshAccessToken(refreshToken);
 
         ConnectorService connectorService = BundleUtils.getOsgiService(ConnectorService.class, "(" + JahiaOAuthConstants.CONNECTOR_SERVICE_NAME + "=" + connectorServiceName + ")");
@@ -147,7 +147,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     @Override
     public void extractAccessTokenAndExecuteMappers(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String token, String state) throws Exception {
         JCRNodeWrapper connectorNode = jahiaOAuthNode.getNode(connectorServiceName);
-        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName, state);
+        OAuth20Service service = createOAuth20Service(connectorNode, connectorServiceName);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
 
         ConnectorService connectorService = BundleUtils.getOsgiService(ConnectorService.class, "(" + JahiaOAuthConstants.CONNECTOR_SERVICE_NAME + "=" + connectorServiceName + ")");
@@ -306,7 +306,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private OAuth20Service createOAuth20Service(JCRNodeWrapper connectorNode, String serviceName, String state) throws RepositoryException {
+    private OAuth20Service createOAuth20Service(JCRNodeWrapper connectorNode, String serviceName) throws RepositoryException {
         List<String> callbackUrls = new ArrayList<>();
         String callbackUrl;
         for (JCRValueWrapper wrapper : connectorNode.getProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URLS).getValues()) {
@@ -318,20 +318,15 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                 .apiSecret(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_API_SECRET))
                 .callback(callbackUrl);
 
-        if (state != null) {
-            serviceBuilder.state(state);
-        }
-
         if (connectorNode.hasProperty(JahiaOAuthConstants.PROPERTY_SCOPE) && StringUtils.isNotBlank(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_SCOPE))) {
-            serviceBuilder.scope(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_SCOPE));
+            serviceBuilder.withScope(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
 
-        return serviceBuilder.build(oAuthBase20ApiMap.get(serviceName));
+        return serviceBuilder.build(oAuthDefaultApi20Map.get(serviceName));
     }
 
-    @Override
-    public void setoAuthBase20ApiMap(Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap) {
-        this.oAuthBase20ApiMap = oAuthBase20ApiMap;
+    public void setoAuthDefaultApi20Map(Map<String, DefaultApi20> oAuthDefaultApi20Map) {
+        this.oAuthDefaultApi20Map = oAuthDefaultApi20Map;
     }
 
     public void setJahiaOAuthCacheService(JahiaOAuthCacheService jahiaOAuthCacheService) {

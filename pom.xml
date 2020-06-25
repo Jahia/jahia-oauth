@@ -129,7 +129,7 @@
         <dependency>
             <groupId>com.github.scribejava</groupId>
             <artifactId>scribejava-apis</artifactId>
-            <version>4.1.2</version>
+            <version>6.8.1</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.gemini.blueprint</groupId>
