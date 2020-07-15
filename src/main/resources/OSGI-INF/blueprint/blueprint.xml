@@ -97,6 +97,7 @@
     <service interface="org.jahia.bin.Action">
         <bean class="org.jahia.modules.jahiaoauth.action.ManageConnectorsSettings">
             <property name="name" value="manageConnectorsSettingsAction"/>
+            <property name="requiredMethods" value="GET,POST"/>
             <property name="requiredPermission" value="canSetupJahiaOAuth"/>
         </bean>
     </service>
