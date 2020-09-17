@@ -44,7 +44,6 @@
 package org.jahia.modules.jahiaoauth.service;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Service to be implemented by a connector to allow Jahia OAuth to work
@@ -68,7 +67,7 @@ public interface ConnectorService {
      * This method get the list of available properties with this connector
      * @return List the list of available properties
      */
-    List<Map<String, Object>> getAvailableProperties();
+    List<ConnectorPropertyInfo> getAvailableProperties();
 
     /**
      * Nested interface implemented by FranceConnect connector to allow Jahia OAuth

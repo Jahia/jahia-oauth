@@ -88,17 +88,7 @@ public interface JahiaOAuthService {
      */
     void extractAccessTokenAndExecuteMappers(OAuthConnectorConfig config, String token, String state) throws Exception;
 
-    /**
-     * This method will get the mapper results in the cache
-     * @param mapperServiceName String mapper service name
-     * @param sessionId String user session ID
-     * @return HashMap of the results
-     */
-    Map<String, Object> getMapperResults(String mapperServiceName, String sessionId);
-
-    void executeMapper(String state, String mapperName, Map<String, Object> mapperResult);
-
-    /**
+     /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication
      * @param siteUrl String current site URL
      * @param isAuthenticate Boolean will be added to the URL as parameter
@@ -114,15 +104,4 @@ public interface JahiaOAuthService {
      * @throws Exception
      */
     Map<String, Object> refreshAccessToken(OAuthConnectorConfig config, String refreshToken) throws Exception;
-
-    /**
-     * This method request the user data for a given mapper and a given connector
-     * @param config The oauth config for the connector
-     * @param mapperServiceName String the service name of the mapper
-     * @param refreshToken String the refresh token
-     * @return Map containing the result of the mapper
-     * @throws Exception
-     */
-    Map<String, Object> requestUserData(OAuthConnectorConfig config, String mapperServiceName, String refreshToken) throws Exception;
-
 }

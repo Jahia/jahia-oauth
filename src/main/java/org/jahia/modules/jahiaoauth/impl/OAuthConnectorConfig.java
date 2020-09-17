@@ -1,5 +1,7 @@
 package org.jahia.modules.jahiaoauth.impl;
 
+import org.jahia.modules.jahiaauth.service.MapperConfig;
+
 import java.util.ArrayList;
 import java.util.List;
 

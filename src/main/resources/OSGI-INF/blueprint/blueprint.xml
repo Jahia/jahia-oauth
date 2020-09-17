@@ -82,21 +82,20 @@
                 </entry>
             </map>
         </property>
-        <property name="jahiaOAuthCacheService" ref="jahiaOAuthCacheServiceImpl"/>
+        <property name="jahiaAuthMapperService" ref="jahiaAuthMapperService"/>
         <property name="jcrTemplate" ref="jcrTemplate"/>
     </bean>
 
+    <reference id="jahiaAuthMapperService" interface="org.jahia.modules.jahiaauth.service.JahiaAuthMapperService" availability="mandatory"/>
+
     <reference id="jcrTemplate" interface="org.jahia.api.content.JCRTemplate" availability="mandatory"/>
     <reference id="settingsBean" interface="org.jahia.api.settings.SettingsBean"/>
-    <reference id="ehCacheProvider" interface="org.jahia.services.cache.CacheProvider"/>
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
     <reference id="authPipeline" interface="org.jahia.pipelines.Pipeline" filter="(type=authentication)"/>
 
     <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"
              interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthService"/>
-    <service id="JahiaOAuthCacheServiceOsgi" ref="jahiaOAuthCacheServiceImpl"
-             interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthCacheService"/>
 
     <service interface="org.jahia.bin.Action">
         <bean class="org.jahia.modules.jahiaoauth.action.ManageConnectorsSettings">
@@ -113,28 +112,7 @@
         </bean>
     </service>
 
-    <bean id="joaEHCacheManager" class="org.jahia.modules.jahiaoauth.impl.cache.EHCacheManagerImpl" init-method="init"
-          destroy-method="destroy">
-        <property name="ehCacheProvider" ref="ehCacheProvider"/>
-    </bean>
-
-    <bean id="jahiaOAuthCacheServiceImpl" class="org.jahia.modules.jahiaoauth.impl.cache.JahiaOAuthCacheServiceImpl"
-          init-method="init" destroy-method="destroy">
-        <property name="defaultCacheService" ref="joaEHCacheManager"/>
-        <property name="settingsBean" ref="settingsBean"/>
-        <property name="bundleContext" ref="blueprintBundleContext"/>
-    </bean>
-
     <bean class="org.jahia.modules.jahiaoauth.tag.JahiaOAuthFunctions">
         <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService"/>
     </bean>
-
-    <bean id="ssoValve" class="org.jahia.modules.jahiaoauth.valves.SSOValve" init-method="start" destroy-method="stop">
-        <property name="jahiaOAuthCacheService" ref="jahiaOAuthCacheServiceImpl"/>
-        <property name="jahiaUserManagerService" ref="JahiaUserManagerService"/>
-        <property name="settingsBean" ref="settingsBean"/>
-        <property name="authPipeline" ref="authPipeline"/>
-    </bean>
-
-
 </blueprint>
