@@ -54,7 +54,7 @@
 
     <artifactId>jahia-oauth</artifactId>
     <name>Jahia OAuth</name>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>This is the custom module (Jahia OAuth) for running on a Digital Experience Manager server.</description>
 
@@ -68,8 +68,9 @@
     <properties>
         <export-package>org.jahia.modules.jahiaoauth.service,org.jahia.modules.jahiaoauth.decorator,org.jahia.modules.jahiaoauth.action</export-package>
         <jahia-static-resources>/css,/javascript,/icons</jahia-static-resources>
-        <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
-        <jahia-module-signature>MCwCFDq/2RYC07M++HXiuXmpIVnbqv1kAhQuM+lWn3tRbm+PGETKUyOaef719g==</jahia-module-signature>
+        <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)", org.jahia.license;filter:="(key=org.jahia.oauthConnector)"</require-capability>
+        <jahia-key>org.jahia.oauthConnector</jahia-key>
+        <jahia-module-signature>MCwCFAxLNtzzs4bXEGVtDbaohBwdswj1AhQd2oQRSIFulgzgZrTss0xOn3GOjQ==</jahia-module-signature>
         <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
     </properties>
 
