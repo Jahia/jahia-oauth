@@ -11,34 +11,8 @@
                 <files jcr:primaryType="jnt:folder"/>
                 <contents jcr:primaryType="jnt:contentFolder"/>
                 <templates j:rootTemplatePath="/base" jcr:primaryType="jnt:templatesFolder">
-                    <files jcr:primaryType="jnt:folder">
-                        <oauth_16x16_logo.png j:height="16"
-                                     j:width="16"
-                                     jcr:mixinTypes="jmix:image"
-                                     jcr:primaryType="jnt:file">
-                            <jcr:content jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                            <thumbnail jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                            <thumbnail2 jcr:mimeType="image/png" jcr:primaryType="jnt:resource"/>
-                        </oauth_16x16_logo.png>
-                    </files>
+                    <files jcr:primaryType="jnt:folder"/>
                     <contents jcr:primaryType="jnt:contentFolder"/>
-                    <site-settings-base j:view="siteSettings"
-                                jcr:mixinTypes="jmix:useUILocale"
-                                jcr:primaryType="jnt:template">
-                        <oauth-connector-site-settings j:applyOn="jnt:virtualsite"
-                                              j:defaultTemplate="false"
-                                              j:hiddenTemplate="false"
-                                              j:icon="/modules/jahia-oauth/templates/files/oauth_16x16_logo.png"
-                                              j:requiredPermissionNames="canSetupJahiaOAuth"
-                                              j:titleKey="joant_oauthConnectorSiteSettings"
-                                              j:view="oauthSettings"
-                                              jcr:mixinTypes="jmix:rbTitle"
-                                              jcr:primaryType="jnt:contentTemplate">
-                            <pagecontent jcr:primaryType="jnt:contentList">
-                                <oauthconnectorsitesettings jcr:primaryType="joant:oauthConnectorSiteSettings"/>
-                            </pagecontent>
-                        </oauth-connector-site-settings>
-                    </site-settings-base>
                     <oauth-result j:hiddenTemplate="true"
                           j:view="oauthResult"
                           jcr:primaryType="jnt:pageTemplate">

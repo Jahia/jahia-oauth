@@ -25,7 +25,8 @@ package org.jahia.modules.jahiaoauth.action;
 
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
-import org.jahia.modules.jahiaoauth.impl.OAuthConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.SettingsService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.services.content.JCRSessionWrapper;
@@ -43,6 +44,7 @@ import java.util.Map;
  * @author dgaillard
  */
 public class ConnectToOAuthProvider extends Action {
+    private SettingsService settingsService;
     private JahiaOAuthService jahiaOAuthService;
     private String connectorName;
     private Map<String, String> additionalParams;
@@ -53,7 +55,7 @@ public class ConnectToOAuthProvider extends Action {
                                   URLResolver urlResolver) throws Exception {
 
         final String sessionId = req.getSession().getId();
-        OAuthConnectorConfig oauthConfig = jahiaOAuthService.getOAuthConfig(renderContext.getSite().getSiteKey()).get(connectorName);
+        ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
         String authorizationUrl =  jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
 
@@ -68,6 +70,10 @@ public class ConnectToOAuthProvider extends Action {
 
     public void setJahiaOAuthService(JahiaOAuthService jahiaOAuthService) {
         this.jahiaOAuthService = jahiaOAuthService;
+    }
+
+    public void setSettingsService(SettingsService settingsService) {
+        this.settingsService = settingsService;
     }
 
     public void setConnectorName(String connectorName) {

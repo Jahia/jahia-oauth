@@ -4,33 +4,9 @@
 <joant = 'http://www.jahia.org/jahia/joa/nt/1.0'>
 <mix = 'http://www.jcp.org/jcr/mix/1.0'>
 
-[joamix:oauthConnectorView] > jmix:siteComponent, jmix:studioOnly mixin
-
-[joamix:oauthConnectorSettings] > jmix:autoPublish mixin
- - isActivate (boolean) indexed=no nofulltext
- - apiKey (string) hidden indexed=no nofulltext
- - apiSecret (string) hidden indexed=no nofulltext
- - callbackUrls (string) multiple hidden indexed=no nofulltext
- - scope (string) hidden indexed=no nofulltext
- + mappers (joant:mappers) = joant:mappers
-
-[joant:jahiaOAuth] > jmix:autoPublish, mix:referenceable
- + * (joamix:oauthConnectorSettings) = joamix:oauthConnectorSettings
-
 [joamix:oauthButtonConnector] > jmix:droppableContent, mix:title mixin
  - cssClass (string) indexed=no nofulltext
  - htmlId (string) indexed=no nofulltext
  - tagType (string, choicelist[resourceBundle]) = 'button' autocreated indexed=no nofulltext < 'button', 'a'
-
-[joant:oauthConnectorSiteSettings] > jnt:content, jmix:siteComponent, jmix:studioOnly
-
-[joamix:oauthMapperView] > jmix:siteComponent, jmix:studioOnly mixin
-
-[joant:mappers] > jmix:autoPublish, mix:referenceable
- + * (joamix:oauthMapperSettings) = joamix:oauthMapperSettings
-
-[joamix:oauthMapperSettings] > jmix:autoPublish mixin
- - isActivate (boolean) indexed=no nofulltext
- - mapping (string) hidden indexed=no nofulltext
 
 [joant:oauthResult] > jnt:content, jmix:siteComponent, jmix:studioOnly

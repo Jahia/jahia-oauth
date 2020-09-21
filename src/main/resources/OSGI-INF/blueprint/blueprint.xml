@@ -83,12 +83,12 @@
             </map>
         </property>
         <property name="jahiaAuthMapperService" ref="jahiaAuthMapperService"/>
-        <property name="jcrTemplate" ref="jcrTemplate"/>
+        <property name="settingsService" ref="settingsService"/>
     </bean>
 
     <reference id="jahiaAuthMapperService" interface="org.jahia.modules.jahiaauth.service.JahiaAuthMapperService" availability="mandatory"/>
 
-    <reference id="jcrTemplate" interface="org.jahia.api.content.JCRTemplate" availability="mandatory"/>
+    <reference id="settingsService" interface="org.jahia.modules.jahiaauth.service.SettingsService" availability="mandatory"/>
     <reference id="settingsBean" interface="org.jahia.api.settings.SettingsBean"/>
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
@@ -97,22 +97,4 @@
     <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"
              interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthService"/>
 
-    <service interface="org.jahia.bin.Action">
-        <bean class="org.jahia.modules.jahiaoauth.action.ManageConnectorsSettings">
-            <property name="name" value="manageConnectorsSettingsAction"/>
-            <property name="requiredMethods" value="GET,POST"/>
-            <property name="requiredPermission" value="canSetupJahiaOAuth"/>
-        </bean>
-    </service>
-
-    <service interface="org.jahia.bin.Action">
-        <bean class="org.jahia.modules.jahiaoauth.action.ManageMappers">
-            <property name="name" value="manageMappersAction"/>
-            <property name="requiredPermission" value="canSetupJahiaOAuth"/>
-        </bean>
-    </service>
-
-    <bean class="org.jahia.modules.jahiaoauth.tag.JahiaOAuthFunctions">
-        <property name="jahiaTemplateManagerService" ref="JahiaTemplateManagerService"/>
-    </bean>
 </blueprint>

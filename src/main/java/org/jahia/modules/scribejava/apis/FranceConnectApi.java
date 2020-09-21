@@ -44,7 +44,8 @@
 package org.jahia.modules.scribejava.apis;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
-import org.jahia.modules.jahiaoauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.osgi.BundleUtils;
 
@@ -65,7 +66,7 @@ public class FranceConnectApi extends DefaultApi20 {
     public String getAccessTokenEndpoint() {
         ConnectorService.DevMode connectorService = (ConnectorService.DevMode) BundleUtils.getOsgiService(
                 ConnectorService.class,
-                "(" + JahiaOAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
+                "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
         );
         String result = "https://app.franceconnect.gouv.fr/api/v1/token";
         if (connectorService.isDevMode()) {
@@ -78,7 +79,7 @@ public class FranceConnectApi extends DefaultApi20 {
     protected String getAuthorizationBaseUrl() {
         ConnectorService.DevMode connectorService = (ConnectorService.DevMode) BundleUtils.getOsgiService(
                 ConnectorService.class,
-                "(" + JahiaOAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
+                "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
         );
         String result = "https://app.franceconnect.gouv.fr/api/v1/authorize";
         if (connectorService.isDevMode()) {

@@ -26,7 +26,8 @@ package org.jahia.modules.jahiaoauth.action;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.bin.Action;
 import org.jahia.bin.ActionResult;
-import org.jahia.modules.jahiaoauth.impl.OAuthConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.SettingsService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.services.content.JCRSessionWrapper;
@@ -48,6 +49,7 @@ public class OAuthCallback extends Action {
     private static final Logger logger = LoggerFactory.getLogger(OAuthCallback.class);
 
     private JahiaOAuthService jahiaOAuthService;
+    private SettingsService settingsService;
     private String connectorName;
 
     @Override
@@ -63,7 +65,7 @@ public class OAuthCallback extends Action {
                 return ActionResult.BAD_REQUEST;
             }
 
-            OAuthConnectorConfig oauthConfig = jahiaOAuthService.getOAuthConfig(renderContext.getSite().getSiteKey()).get(connectorName);
+            ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
             try {
                 jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, state);
                 isAuthenticate = true;
@@ -77,6 +79,10 @@ public class OAuthCallback extends Action {
         return new ActionResult(HttpServletResponse.SC_OK,
                 jahiaOAuthService.getResultUrl(renderContext.getSite().getUrl(), isAuthenticate),
                 true, null);
+    }
+
+    public void setSettingsService(SettingsService settingsService) {
+        this.settingsService = settingsService;
     }
 
     public void setJahiaOAuthService(JahiaOAuthService jahiaOAuthService) {

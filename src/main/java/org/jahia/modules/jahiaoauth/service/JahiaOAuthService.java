@@ -43,9 +43,8 @@
  */
 package org.jahia.modules.jahiaoauth.service;
 
-import org.jahia.modules.jahiaoauth.impl.OAuthConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 
-import javax.jcr.RepositoryException;
 import java.util.Map;
 
 /**
@@ -56,19 +55,12 @@ import java.util.Map;
 public interface JahiaOAuthService {
 
     /**
-     * Get the OAuth configuration for the given site
-     * @param siteKey the site key
-     * @return the configuration
-     */
-    Map<String, OAuthConnectorConfig> getOAuthConfig(String siteKey) throws RepositoryException;
-
-    /**
      * This method will get the authorization URL so a connector can display the authentication popup to the user
      * @param config The oauth config for the connector
      * @param sessionId String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
      * @return String authorization URL
      */
-    String getAuthorizationUrl(OAuthConnectorConfig config, String sessionId);
+    String getAuthorizationUrl(ConnectorConfig config, String sessionId);
 
     /**
      * This method will get the authorization URL so a connector can display the authentication popup to the user
@@ -77,7 +69,7 @@ public interface JahiaOAuthService {
      * @param additionalParams additional parameter required to get the authorization URL
      * @return String authorization URL
      */
-    String getAuthorizationUrl(OAuthConnectorConfig config, String sessionId, Map<String, String> additionalParams);
+    String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams);
 
     /**
      * This method will extract the token and execute the mappers action
@@ -86,7 +78,7 @@ public interface JahiaOAuthService {
      * @param state String state send back by OAuth API in this context it's the user session ID
      * @throws Exception
      */
-    void extractAccessTokenAndExecuteMappers(OAuthConnectorConfig config, String token, String state) throws Exception;
+    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
 
      /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication
@@ -103,5 +95,5 @@ public interface JahiaOAuthService {
      * @return Map containing the data of the access token
      * @throws Exception
      */
-    Map<String, Object> refreshAccessToken(OAuthConnectorConfig config, String refreshToken) throws Exception;
+    Map<String, Object> refreshAccessToken(ConnectorConfig config, String refreshToken) throws Exception;
 }

@@ -51,26 +51,22 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
-import org.jahia.modules.jahiaauth.service.MapperConfig;
-import org.jahia.modules.jahiaauth.service.Mapping;
-import org.jahia.modules.jahiaoauth.service.ConnectorPropertyInfo;
-import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
-import org.jahia.modules.jahiaauth.service.JahiaAuthMapperService;
-import org.jahia.modules.jahiaoauth.service.*;
+import org.jahia.modules.jahiaauth.service.*;
+import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
+import org.jahia.modules.jahiaoauth.service.JahiaOAuthException;
+import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.osgi.BundleUtils;
-import org.jahia.services.content.JCRNodeIteratorWrapper;
-import org.jahia.services.content.JCRNodeWrapper;
-import org.jahia.api.content.JCRTemplate;
-import org.jahia.services.content.JCRValueWrapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * @author dgaillard
@@ -78,23 +74,23 @@ import java.util.*;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
 
-    private JCRTemplate jcrTemplate;
     private Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaAuthMapperService jahiaAuthMapperService;
+    private SettingsService settingsService;
 
     @Override
-    public String getAuthorizationUrl(OAuthConnectorConfig config, String sessionId) {
+    public String getAuthorizationUrl(ConnectorConfig config, String sessionId) {
         return getAuthorizationUrl(config, sessionId, null);
     }
 
     @Override
-    public String getAuthorizationUrl(OAuthConnectorConfig config, String sessionId, Map<String, String> additionalParams) {
+    public String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams) {
         OAuth20Service service = createOAuth20Service(config);
 
         return service.createAuthorizationUrlBuilder().state(sessionId).build();
     }
 
-//    @Override
+    //    @Override
 //    public Map<String, Object> getMapperResults(String mapperServiceName, String sessionId) {
 //        return jahiaAuthMapperService.getMapperResultsCacheEntry(mapperServiceName + "_" + sessionId);
 //    }
@@ -105,18 +101,18 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
-    public Map<String, Object> refreshAccessToken(OAuthConnectorConfig config, String refreshToken) throws Exception {
+    public Map<String, Object> refreshAccessToken(ConnectorConfig config, String refreshToken) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.refreshAccessToken(refreshToken);
         return extractAccessTokenData(accessToken);
     }
 
     @Override
-    public void extractAccessTokenAndExecuteMappers(OAuthConnectorConfig config, String token, String state) throws Exception {
+    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
 
-        ConnectorService connectorService = BundleUtils.getOsgiService(ConnectorService.class, "(" + JahiaOAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
+        ConnectorService connectorService = BundleUtils.getOsgiService(ConnectorService.class, "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
         if (connectorService == null) {
             logger.error("Connector service was null for service name: {}", config.getConnectorName());
             throw new JahiaOAuthException("Connector service was null for service name: " + config.getConnectorName());
@@ -147,7 +143,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Did not received expected json, response message was: {} and response body was: {}",response.getMessage(), response.getBody());
+                logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(), response.getBody());
                 throw e;
             }
         } else {
@@ -223,9 +219,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult, String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
-        propertiesResult.put(JahiaOAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
-        propertiesResult.put(JahiaOAuthConstants.CONNECTOR_NAME_AND_ID, connectorServiceName + "_" + propertiesResult.get("id"));
-        propertiesResult.put(JahiaOAuthConstants.PROPERTY_SITE_KEY, siteKey);
+        propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
+        propertiesResult.put(JahiaAuthConstants.CONNECTOR_NAME_AND_ID, connectorServiceName + "_" + propertiesResult.get("id"));
+        propertiesResult.put(JahiaAuthConstants.PROPERTY_SITE_KEY, siteKey);
     }
 
     private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty, String propertyName) throws JSONException {
@@ -242,83 +238,17 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private OAuth20Service createOAuth20Service(OAuthConnectorConfig config) {
-        List<String> callbackUrls = config.getCallbackUrls();
+    private OAuth20Service createOAuth20Service(ConnectorConfig config) {
+        List<String> callbackUrls = config.getListProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URLS);
         String callbackUrl = callbackUrls.get(new Random().nextInt(callbackUrls.size()));
 
-        ServiceBuilder serviceBuilder = new ServiceBuilder(config.getApiKey()).apiSecret(config.getApiSecret()).callback(callbackUrl);
+        ServiceBuilder serviceBuilder = new ServiceBuilder(config.getProperty(JahiaOAuthConstants.PROPERTY_API_KEY)).apiSecret(config.getProperty(JahiaOAuthConstants.PROPERTY_API_SECRET)).callback(callbackUrl);
 
-        if (StringUtils.isNotBlank(config.getScopes())) {
-            serviceBuilder.withScope(config.getScopes());
+        if (StringUtils.isNotBlank(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE))) {
+            serviceBuilder.withScope(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
 
         return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getConnectorName()));
-    }
-
-    public Map<String, OAuthConnectorConfig> getOAuthConfig(String siteKey) throws RepositoryException {
-        return jcrTemplate.doExecuteWithSystemSession(systemSession -> {
-            try {
-                JCRNodeWrapper jahiaOAuthNode = systemSession.getNode("/sites/" + siteKey).getNode(JahiaOAuthConstants.JAHIA_OAUTH_NODE_NAME);
-                Map<String,OAuthConnectorConfig> l = new HashMap<>();
-                JCRNodeIteratorWrapper mappersNi = jahiaOAuthNode.getNodes();
-                while (mappersNi.hasNext()) {
-                    JCRNodeWrapper node = (JCRNodeWrapper) mappersNi.nextNode();
-                    OAuthConnectorConfig config = getConnectorConfig(node);
-                    l.put(config.getConnectorName(), config);
-                }
-                return l;
-            } catch (Exception ex) {
-                logger.error("Could not read config", ex);
-                return null;
-            }
-        });
-    }
-
-    private OAuthConnectorConfig getConnectorConfig(JCRNodeWrapper connectorNode) throws JSONException, RepositoryException {
-        OAuthConnectorConfig connectorConfig = new OAuthConnectorConfig(connectorNode.getName());
-        connectorConfig.setActive(connectorNode.getProperty(JahiaOAuthConstants.PROPERTY_IS_ACTIVATE).getBoolean());
-        connectorConfig.setSiteKey(connectorNode.getResolveSite().getSiteKey());
-        connectorConfig.setApiKey(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_API_KEY));
-        connectorConfig.setApiSecret(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_API_SECRET));
-        for (JCRValueWrapper wrapper : connectorNode.getProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URLS).getValues()) {
-            connectorConfig.getCallbackUrls().add(wrapper.getString());
-        }
-        if (connectorNode.hasProperty(JahiaOAuthConstants.PROPERTY_SCOPE) && StringUtils.isNotBlank(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_SCOPE))) {
-            connectorConfig.setScopes(connectorNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_SCOPE));
-        }
-
-        JCRNodeIteratorWrapper mappersNi = connectorNode.getNode(JahiaOAuthConstants.MAPPERS_NODE_NAME).getNodes();
-        while (mappersNi.hasNext()) {
-            JCRNodeWrapper mapperNode = (JCRNodeWrapper) mappersNi.nextNode();
-
-            MapperConfig mapperConfig = new MapperConfig(mapperNode.getName());
-            mapperConfig.setSiteKey(mapperNode.getResolveSite().getSiteKey());
-            mapperConfig.setActive(mapperNode.getProperty(JahiaOAuthConstants.PROPERTY_IS_ACTIVATE).getBoolean());
-            JSONArray mappingsJson = new JSONArray(mapperNode.getPropertyAsString(JahiaOAuthConstants.PROPERTY_MAPPING));
-
-            Mapping loginMapping = new Mapping();
-            loginMapping.setConnectorProperty(JahiaOAuthConstants.CONNECTOR_NAME_AND_ID);
-            loginMapping.setMappedProperty(JahiaAuthConstants.SSO_LOGIN);
-            mapperConfig.getMappings().add(loginMapping);
-
-            Mapping siteMapping = new Mapping();
-            siteMapping.setConnectorProperty(JahiaOAuthConstants.PROPERTY_SITE_KEY);
-            siteMapping.setMappedProperty(JahiaAuthConstants.SITE_KEY);
-            mapperConfig.getMappings().add(siteMapping);
-
-            for (int i = 0; i < mappingsJson.length(); i++) {
-                JSONObject jsonObject = mappingsJson.getJSONObject(i);
-                JSONObject mapperJson = jsonObject.getJSONObject(JahiaOAuthConstants.MAPPER);
-                JSONObject connectorJson = jsonObject.getJSONObject(JahiaOAuthConstants.CONNECTOR);
-
-                Mapping mapping = new Mapping();
-                mapping.setConnectorProperty(connectorJson.getString(JahiaAuthConstants.PROPERTY_NAME));
-                mapping.setMappedProperty(mapperJson.getString(JahiaAuthConstants.PROPERTY_NAME));
-                mapperConfig.getMappings().add(mapping);
-            }
-            connectorConfig.getMappers().add(mapperConfig);
-        }
-        return connectorConfig;
     }
 
     public void setoAuthDefaultApi20Map(Map<String, DefaultApi20> oAuthDefaultApi20Map) {
@@ -329,7 +259,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         this.jahiaAuthMapperService = jahiaAuthMapperService;
     }
 
-    public void setJcrTemplate(JCRTemplate jcrTemplate) {
-        this.jcrTemplate = jcrTemplate;
+    public void setSettingsService(SettingsService settingsService) {
+        this.settingsService = settingsService;
     }
 }

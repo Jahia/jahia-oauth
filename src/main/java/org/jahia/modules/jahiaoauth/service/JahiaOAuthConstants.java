@@ -51,23 +51,11 @@ import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
  * @author dgaillard
  */
 public class JahiaOAuthConstants {
-    public static final String JAHIA_OAUTH_NODE_NAME = "jahiaOAuth";
-    public static final String MAPPERS_NODE_NAME = "mappers";
-
-    public static final String PROPERTY_IS_ACTIVATE = "isActivate";
     public static final String PROPERTY_API_KEY = "apiKey";
     public static final String PROPERTY_API_SECRET = "apiSecret";
     public static final String PROPERTY_CALLBACK_URLS = "callbackUrls";
     public static final String PROPERTY_SCOPE = "scope";
-    public static final String PROPERTY_MAPPING = "mapping";
-    public static final String PROPERTY_NAME = JahiaAuthConstants.PROPERTY_NAME;
-    public static final String PROPERTY_MANDATORY = "mandatory";
-    public static final String PROPERTY_SITE_KEY = "siteKey";
-    public static final String PROPERTY_VALUE_FORMAT = JahiaAuthConstants.PROPERTY_VALUE_FORMAT;
-    public static final String PROPERTY_VALUE_TYPE = JahiaAuthConstants.PROPERTY_VALUE_TYPE;
-    public static final String PROPERTY_VALUE = JahiaAuthConstants.PROPERTY_VALUE;
 
-    public static final String CONNECTOR_NAME_AND_ID = "connectorNameAndID";
     public static final String STATE = "state";
     public static final String TOKEN_DATA = "tokenData";
     public static final String ACCESS_TOKEN = "accessToken";
@@ -75,20 +63,7 @@ public class JahiaOAuthConstants {
     public static final String REFRESH_TOKEN = "refreshToken";
     public static final String TOKEN_SCOPE = "tokenScope";
     public static final String TOKEN_TYPE = "tokenType";
-    public static final String NODE_TYPE = "nodeType";
-    public static final String PROPERTIES = "properties";
-    public static final String METHOD_GET = "GET";
     public static final String AUTHORIZATION_URL = "authorizationUrl";
-    public static final String CAN_BE_REQUESTED = "canBeRequested";
-    public static final String PROPERTY_TO_REQUEST = "propertyToRequest";
-    public static final String VALUE_PATH = "valuePath";
-    public static final String CONNECTOR_SERVICE_NAME = "connectorServiceName";
-    public static final String CONNECTOR = "connector";
-    public static final String MAPPER = "mapper";
-
-    public static final String JAHIA_OAUTH_NODE_TYPE = "joant:jahiaOAuth";
-    public static final String OAUTH_CONNECTOR_SETTINGS_NODE_TYPE = "joamix:oauthConnectorSettings";
-    public static final String MAPPERS_NODE_TYPE = "joant:mappers";
 
     private JahiaOAuthConstants() {
     }
