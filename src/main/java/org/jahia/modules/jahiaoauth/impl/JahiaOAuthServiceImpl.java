@@ -75,7 +75,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     private Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaAuthMapperService jahiaAuthMapperService;
-    private SettingsService settingsService;
 
     @Override
     public String getAuthorizationUrl(ConnectorConfig config, String sessionId) {
@@ -89,11 +88,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         return service.createAuthorizationUrlBuilder().state(sessionId).build();
     }
 
-    //    @Override
-//    public Map<String, Object> getMapperResults(String mapperServiceName, String sessionId) {
-//        return jahiaAuthMapperService.getMapperResultsCacheEntry(mapperServiceName + "_" + sessionId);
-//    }
-//
     @Override
     public String getResultUrl(String siteUrl, Boolean isAuthenticate) {
         return StringUtils.substringBeforeLast(siteUrl, ".html") + "/oauth-result.html?isAuthenticate=" + isAuthenticate;
@@ -255,9 +249,5 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     public void setJahiaAuthMapperService(JahiaAuthMapperService jahiaAuthMapperService) {
         this.jahiaAuthMapperService = jahiaAuthMapperService;
-    }
-
-    public void setSettingsService(SettingsService settingsService) {
-        this.settingsService = settingsService;
     }
 }
