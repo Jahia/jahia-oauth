@@ -66,7 +66,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * @author dgaillard
@@ -239,8 +238,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private OAuth20Service createOAuth20Service(ConnectorConfig config) {
-        List<String> callbackUrls = config.getListProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URLS);
-        String callbackUrl = callbackUrls.get(new Random().nextInt(callbackUrls.size()));
+        String callbackUrl = config.getProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URL);
 
         ServiceBuilder serviceBuilder = new ServiceBuilder(config.getProperty(JahiaOAuthConstants.PROPERTY_API_KEY)).apiSecret(config.getProperty(JahiaOAuthConstants.PROPERTY_API_SECRET)).callback(callbackUrl);
 

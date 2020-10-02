@@ -53,7 +53,7 @@ import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
 public class JahiaOAuthConstants {
     public static final String PROPERTY_API_KEY = "apiKey";
     public static final String PROPERTY_API_SECRET = "apiSecret";
-    public static final String PROPERTY_CALLBACK_URLS = "callbackUrls";
+    public static final String PROPERTY_CALLBACK_URL = "callbackUrl";
     public static final String PROPERTY_SCOPE = "scope";
 
     public static final String STATE = "state";
