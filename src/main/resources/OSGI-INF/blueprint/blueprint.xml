@@ -83,7 +83,6 @@
             </map>
         </property>
         <property name="jahiaAuthMapperService" ref="jahiaAuthMapperService"/>
-        <property name="settingsService" ref="settingsService"/>
     </bean>
 
     <reference id="jahiaAuthMapperService" interface="org.jahia.modules.jahiaauth.service.JahiaAuthMapperService" availability="mandatory"/>
