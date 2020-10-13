@@ -50,6 +50,7 @@ public class GoogleConnectorImpl implements ConnectorService {
 
     @Override
     public void validateSettings(ConnectorConfig settings) throws IOException {
+        // Do nothing
     }
 
     @Override

@@ -43,8 +43,6 @@
  */
 package org.jahia.modules.jahiaoauth.service;
 
-import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
-
 /**
  * Constants use across the application
  *

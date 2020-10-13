@@ -46,7 +46,6 @@ package org.jahia.modules.scribejava.apis;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import org.jahia.modules.jahiaauth.service.ConnectorService;
 import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
-import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.osgi.BundleUtils;
 
 public class FranceConnectApi extends DefaultApi20 {
