@@ -15,3 +15,8 @@
 
 [joant:googleButton] > jnt:content, joamix:oauthButtonConnector
  - buttonColor (string, choicelist[resourceBundle]) = 'light' < 'light', 'dark'
+
+[joant:franceConnectOAuthView] > jnt:content, jmix:authConnectorSettingView
+
+[joant:franceConnectButton] > jnt:content, joamix:oauthButtonConnector
+ - buttonColor (string, choicelist[resourceBundle]) = 'coloredBackgroundBlue' < 'backgroundWhite', 'backgroundBlue', 'coloredBackgroundWhite', 'coloredBackgroundBlue'

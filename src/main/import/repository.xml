@@ -30,6 +30,16 @@
                             <googleoauthview jcr:primaryType="joant:googleOAuthView"/>
                         </pagecontent>
                     </google-oauth-view>
+                    <franceconnect-oauth-view j:defaultTemplate="false"
+                                              j:hiddenTemplate="true"
+                                              j:invertCondition="false"
+                                              j:requireLoggedUser="false"
+                                              j:requirePrivilegedUser="false"
+                                              jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <franceconnectoauthview jcr:primaryType="joant:franceConnectOAuthView"/>
+                        </pagecontent>
+                    </franceconnect-oauth-view>
                 </templates>
                 
                 <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">
