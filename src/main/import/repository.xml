@@ -20,6 +20,16 @@
                             <authentication-result jcr:primaryType="joant:oauthResult"/>
                         </pagecontent>
                     </oauth-result>
+                    <google-oauth-view j:defaultTemplate="false"
+                                       j:hiddenTemplate="true"
+                                       j:invertCondition="false"
+                                       j:requireLoggedUser="false"
+                                       j:requirePrivilegedUser="false"
+                                       jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <googleoauthview jcr:primaryType="joant:googleOAuthView"/>
+                        </pagecontent>
+                    </google-oauth-view>
                 </templates>
                 
                 <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">

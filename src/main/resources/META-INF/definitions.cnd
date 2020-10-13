@@ -10,3 +10,8 @@
  - tagType (string, choicelist[resourceBundle]) = 'button' autocreated indexed=no nofulltext < 'button', 'a'
 
 [joant:oauthResult] > jnt:content, jmix:siteComponent, jmix:studioOnly
+
+[joant:googleOAuthView] > jnt:content, jmix:authConnectorSettingView
+
+[joant:googleButton] > jnt:content, joamix:oauthButtonConnector
+ - buttonColor (string, choicelist[resourceBundle]) = 'light' < 'light', 'dark'

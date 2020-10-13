@@ -96,4 +96,91 @@
     <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"
              interface="org.jahia.modules.jahiaoauth.service.JahiaOAuthService"/>
 
+    <!-- Google connector -->
+
+    <service ref="googleConnectorImpl" interface="org.jahia.modules.jahiaauth.service.ConnectorService">
+        <service-properties>
+            <entry key="connectorServiceName" value="GoogleApi20"/>
+        </service-properties>
+    </service>
+
+    <bean id="googleConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.GoogleConnectorImpl">
+        <property name="serviceName" value="GoogleApi20"/>
+        <property name="protectedResourceUrl" value="https://www.googleapis.com/oauth2/v3/userinfo"/>
+        <property name="availableProperties">
+            <list>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="id"/>
+                    <property name="propertyToRequest" value="sub"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="gender"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="language"/>
+                    <property name="propertyToRequest" value="locale"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="familyName"/>
+                    <property name="propertyToRequest" value="family_name"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="givenName"/>
+                    <property name="propertyToRequest" value="given_name"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="email"/>
+                    <property name="valueType" value="email"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="profilePictureUrl"/>
+                    <property name="propertyToRequest" value="picture"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+                    <property name="name" value="hd"/>
+                    <property name="valueType" value="string"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <service interface="org.jahia.bin.Action">
+        <bean class="org.jahia.modules.jahiaoauth.action.ConnectToOAuthProvider">
+            <property name="name" value="connectToGoogleAction"/>
+            <property name="requireAuthenticatedUser" value="false"/>
+            <property name="requiredMethods" value="GET"/>
+            <property name="jahiaOAuthService" ref="jahiaOAuthServiceImpl"/>
+            <property name="settingsService" ref="settingsService"/>
+            <property name="connectorName" value="GoogleApi20"/>
+            <property name="additionalParams">
+                <map>
+                    <!-- pass access_type=offline to get refresh token -->
+                    <!-- https://developers.google.com/identity/protocols/OAuth2WebServer#preparing-to-start-the-oauth-20-flow -->
+                    <entry key="access_type" value="offline"/>
+                    <!-- force to reget refresh token (if user are asked not the first time) -->
+                    <entry key="prompt" value="consent"/>
+                    <entry key="include_granted_scopes" value="true"/>
+                </map>
+            </property>
+        </bean>
+    </service>
+
+    <service interface="org.jahia.bin.Action">
+        <bean class="org.jahia.modules.jahiaoauth.action.OAuthCallback">
+            <property name="name" value="googleOAuthCallbackAction"/>
+            <property name="requireAuthenticatedUser" value="false"/>
+            <property name="requiredMethods" value="GET"/>
+            <property name="jahiaOAuthService" ref="jahiaOAuthServiceImpl"/>
+            <property name="settingsService" ref="settingsService"/>
+            <property name="connectorName" value="GoogleApi20"/>
+        </bean>
+    </service>
+
+
 </blueprint>
