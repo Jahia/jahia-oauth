@@ -78,7 +78,16 @@
                     <bean class="com.github.scribejava.apis.ImgurApi"/>
                 </entry>
                 <entry key="FranceConnectApi">
-                    <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi"/>
+                    <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
+                        <property name="accessTokenEndpoint" value="https://app.franceconnect.gouv.fr/api/v1/token"/>
+                        <property name="authorizationBaseUrl" value="https://app.franceconnect.gouv.fr/api/v1/authorize"/>
+                    </bean>
+                </entry>
+                <entry key="FranceConnectApiDev">
+                    <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
+                        <property name="accessTokenEndpoint" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/token"/>
+                        <property name="authorizationBaseUrl" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize"/>
+                    </bean>
                 </entry>
             </map>
         </property>
@@ -98,14 +107,17 @@
 
     <!-- Google connector -->
 
-    <service ref="googleConnectorImpl" interface="org.jahia.modules.jahiaauth.service.ConnectorService">
+    <service ref="googleConnectorImpl">
+        <interfaces>
+            <value>org.jahia.modules.jahiaauth.service.ConnectorService</value>
+            <value>org.jahia.modules.jahiaoauth.service.OAuthConnectorService</value>
+        </interfaces>
         <service-properties>
             <entry key="connectorServiceName" value="GoogleApi20"/>
         </service-properties>
     </service>
 
     <bean id="googleConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.GoogleConnectorImpl">
-        <property name="serviceName" value="GoogleApi20"/>
         <property name="protectedResourceUrl" value="https://www.googleapis.com/oauth2/v3/userinfo"/>
         <property name="availableProperties">
             <list>
@@ -184,17 +196,23 @@
 
     <!-- Franceconnect -->
 
-    <service ref="franceConnectConnectorImpl" interface="org.jahia.modules.jahiaauth.service.ConnectorService">
+    <service ref="franceConnectConnectorImpl">
+        <interfaces>
+            <value>org.jahia.modules.jahiaauth.service.ConnectorService</value>
+            <value>org.jahia.modules.jahiaoauth.service.OAuthConnectorService</value>
+        </interfaces>
         <service-properties>
             <entry key="connectorServiceName" value="FranceConnectApi"/>
         </service-properties>
     </service>
 
     <bean id="franceConnectConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FranceConnectConnectorImpl">
-        <property name="serviceName" value="FranceConnectApi"/>
-        <property name="devMode" value="true"/>
-        <property name="devProtectedResourceUrl" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/userinfo"/>
-        <property name="protectedResourceUrl" value="https://app.franceconnect.gouv.fr/api/v1/userinfo"/>
+        <property name="protectedResourceUrl">
+            <map>
+                <entry key="FranceConnectApi" value="https://app.franceconnect.gouv.fr/api/v1/userinfo"/>
+                <entry key="FranceConnectApiDev" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/userinfo"/>
+            </map>
+        </property>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -249,5 +267,16 @@
         </bean>
     </service>
 
-
+    <service interface="org.jahia.bin.filters.AbstractServletFilter">
+        <bean class="org.jahia.modules.jahiaoauth.action.FranceConnectFilter">
+            <property name="beanName" value="fcfilter"/>
+            <property name="filterName" value="fcfilter"/>
+            <property name="urlPatterns">
+                <list>
+                    <value>/callback</value>
+                </list>
+            </property>
+            <property name="order" value="0"/>
+        </bean>
+    </service>
 </blueprint>

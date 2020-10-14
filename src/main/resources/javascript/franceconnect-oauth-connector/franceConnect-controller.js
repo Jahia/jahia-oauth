@@ -3,9 +3,9 @@
 
     angular.module('JahiaOAuthApp').controller('FranceConnectController', FranceConnectController);
 
-    FranceConnectController.$inject = ['$location', 'settingsService', 'helperService', 'i18nService'];
+    FranceConnectController.$inject = ['$location', 'settingsService', 'helperService', 'i18nService', 'jahiaContext'];
 
-    function FranceConnectController ($location, settingsService, helperService, i18nService) {
+    function FranceConnectController ($location, settingsService, helperService, i18nService, jahiaContext) {
         var vm = this;
 
         // Variables
@@ -16,6 +16,7 @@
         vm.saveSettings = saveSettings;
         vm.goToMappers = goToMappers;
         vm.toggleCard = toggleCard;
+        vm.switchDev = switchDev;
 
         init();
 
@@ -35,6 +36,7 @@
                     enabled: vm.enabled,
                     apiKey: vm.apiKey,
                     apiSecret: vm.apiSecret,
+                    oauthApiName: vm.dev ? 'FranceConnectApiDev' : 'FranceConnectApi',
                     callbackUrl: vm.callbackUrl,
                     scope: vm.scope
                 }
@@ -56,10 +58,29 @@
             vm.expandedCard = !vm.expandedCard;
         }
 
+        function switchDev() {
+            console.log(vm.dev);
+            if (vm.dev) {
+                vm.nonDev = {
+                    apiKey: vm.apiKey,
+                    apiSecret: vm.apiSecret,
+                    callbackUrl: vm.callbackUrl
+                }
+                vm.apiKey = '211286433e39cce01db448d80181bdfd005554b19cd51b3fe7943f6b3b86ab6e'
+                vm.apiSecret = '2791a731e6a59f56b6b4dd0d08c9b1f593b5f3658b9fd731cb24248e2669af4b'
+                vm.callbackUrl = 'http://localhost:8080/callback?url=/cms/render/live/en' + jahiaContext.sitePath + "/home.franceConnectOAuthCallbackAction.do"
+            } else {
+                vm.apiKey = vm.nonDev ? vm.nonDev.apiKey : '';
+                vm.apiSecret = vm.nonDev ? vm.nonDev.apiSecret : '';
+                vm.callbackUrl = vm.nonDev ? vm.nonDev.callbackUrl : '';
+            }
+        }
+
         function init() {
             i18nService.addKey(oauthi18n);
+            vm.siteKey = jahiaContext.siteKey;
 
-            settingsService.getConnectorData('FranceConnectApi', ['enabled', 'apiKey', 'apiSecret', 'callbackUrl', 'scope']).success(function(data) {
+            settingsService.getConnectorData('FranceConnectApi', ['enabled', 'oauthApiName', 'apiKey', 'apiSecret', 'callbackUrl', 'scope']).success(function(data) {
                 if (data && !angular.equals(data, { })) {
                     console.log(data);
                     vm.connectorHasSettings = true;
@@ -69,6 +90,7 @@
                     vm.callbackUrl = data.callbackUrl;
                     vm.scope = data.scope;
                     vm.expandedCard = true;
+                    vm.dev = data.oauthApiName === 'FranceConnectApiDev';
                 } else {
                     vm.connectorHasSettings = false;
                     vm.enabled = false;

@@ -26,6 +26,7 @@ package org.jahia.modules.jahiaoauth.connectors;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,14 +34,18 @@ import java.util.List;
 /**
  * @author dgaillard
  */
-public class GoogleConnectorImpl implements ConnectorService {
+public class GoogleConnectorImpl implements OAuthConnectorService {
     private String protectedResourceUrl;
-    private String serviceName;
     private List<ConnectorPropertyInfo> availableProperties;
 
     @Override
-    public String getProtectedResourceUrl() {
+    public String getProtectedResourceUrl(ConnectorConfig config) {
         return protectedResourceUrl;
+    }
+
+    @Deprecated
+    public String getProtectedResourceUrl() {
+        return null;
     }
 
     @Override
@@ -53,13 +58,9 @@ public class GoogleConnectorImpl implements ConnectorService {
         // Do nothing
     }
 
-    @Override
     public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+        // Deprecated
+        return null;
     }
 
     public void setProtectedResourceUrl(String protectedResourceUrl) {

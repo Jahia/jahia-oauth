@@ -44,11 +44,13 @@
 package org.jahia.modules.scribejava.apis;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
-import org.jahia.modules.jahiaauth.service.ConnectorService;
-import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
-import org.jahia.osgi.BundleUtils;
+import com.github.scribejava.core.oauth2.clientauthentication.ClientAuthentication;
+import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme;
 
 public class FranceConnectApi extends DefaultApi20 {
+    private String accessTokenEndpoint;
+    private String authorizationBaseUrl;
+    private String userInfoUrl;
 
     protected FranceConnectApi() {
     }
@@ -61,29 +63,24 @@ public class FranceConnectApi extends DefaultApi20 {
         return InstanceHolder.INSTANCE;
     }
 
-    @Override
     public String getAccessTokenEndpoint() {
-        ConnectorService.DevMode connectorService = (ConnectorService.DevMode) BundleUtils.getOsgiService(
-                ConnectorService.class,
-                "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
-        );
-        String result = "https://app.franceconnect.gouv.fr/api/v1/token";
-        if (connectorService.isDevMode()) {
-            result = "https://fcp.integ01.dev-franceconnect.fr/api/v1/token";
-        }
-        return result;
+        return accessTokenEndpoint;
+    }
+
+    public void setAccessTokenEndpoint(String accessTokenEndpoint) {
+        this.accessTokenEndpoint = accessTokenEndpoint;
     }
 
     @Override
-    protected String getAuthorizationBaseUrl() {
-        ConnectorService.DevMode connectorService = (ConnectorService.DevMode) BundleUtils.getOsgiService(
-                ConnectorService.class,
-                "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=FranceConnectApi)"
-        );
-        String result = "https://app.franceconnect.gouv.fr/api/v1/authorize";
-        if (connectorService.isDevMode()) {
-            result = "https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize";
-        }
-        return result;
+    public String getAuthorizationBaseUrl() {
+        return authorizationBaseUrl;
+    }
+
+    public void setAuthorizationBaseUrl(String authorizationBaseUrl) {
+        this.authorizationBaseUrl = authorizationBaseUrl;
+    }
+
+    public ClientAuthentication getClientAuthentication() {
+        return RequestBodyAuthenticationScheme.instance();
     }
 }

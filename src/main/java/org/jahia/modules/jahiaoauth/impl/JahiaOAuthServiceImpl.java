@@ -55,6 +55,7 @@ import org.jahia.modules.jahiaauth.service.*;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthException;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
+import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.jahia.osgi.BundleUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -105,14 +106,14 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
 
-        ConnectorService connectorService = BundleUtils.getOsgiService(ConnectorService.class, "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
+        OAuthConnectorService connectorService = BundleUtils.getOsgiService(OAuthConnectorService.class, "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
         if (connectorService == null) {
             logger.error("Connector service was null for service name: {}", config.getConnectorName());
             throw new JahiaOAuthException("Connector service was null for service name: " + config.getConnectorName());
         }
 
         // Request all the properties available right now
-        OAuthRequest request = new OAuthRequest(Verb.GET, connectorService.getProtectedResourceUrl());
+        OAuthRequest request = new OAuthRequest(Verb.GET, connectorService.getProtectedResourceUrl(config));
         request.addHeader("x-li-format", "json");
         service.signRequest(accessToken, request);
         Response response = service.execute(request);
@@ -239,8 +240,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         if (StringUtils.isNotBlank(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE))) {
             serviceBuilder.withScope(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
-
-        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getConnectorName()));
+        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getProperty("oauthApiName") != null? config.getProperty("oauthApiName") : config.getConnectorName()));
     }
 
     public void setoAuthDefaultApi20Map(Map<String, DefaultApi20> oAuthDefaultApi20Map) {

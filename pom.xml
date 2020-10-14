@@ -66,7 +66,7 @@
     </scm>
 
     <properties>
-        <export-package>org.jahia.modules.jahiaoauth.service,org.jahia.modules.jahiaoauth.decorator,org.jahia.modules.jahiaoauth.action</export-package>
+        <export-package>org.jahia.modules.jahiaoauth.service,org.jahia.modules.jahiaoauth.action</export-package>
         <jahia-static-resources>/css,/javascript,/icons</jahia-static-resources>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)", org.jahia.license;filter:="(key=org.jahia.oauthConnector)"</require-capability>
         <jahia-key>org.jahia.oauthConnector</jahia-key>

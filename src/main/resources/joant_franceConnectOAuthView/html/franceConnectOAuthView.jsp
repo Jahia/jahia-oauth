@@ -48,15 +48,20 @@
 
     <md-card-content layout="column" ng-show="franceConnectCtrl.expandedCard">
         <form name="franceConnectForm">
+            <div layout="row">
+                <md-switch ng-model="franceConnectCtrl.enabled">
+                    <span message-key="joant_franceConnectOAuthView.label.activate"></span>
+                </md-switch>
 
-            <md-switch ng-model="franceConnectCtrl.enabled">
-                <span message-key="joant_franceConnectOAuthView.label.activate"></span>
-            </md-switch>
+                <md-switch ng-model="franceConnectCtrl.dev" ng-change="franceConnectCtrl.switchDev()">
+                    <span message-key="joant_franceConnectOAuthView.label.dev"></span>
+                </md-switch>
+            </div>
 
             <div layout="row">
                 <md-input-container flex>
                     <label message-key="joant_franceConnectOAuthView.label.apiKey"></label>
-                    <input type="text" ng-model="franceConnectCtrl.apiKey" name="apiKey" required>
+                    <input type="text" ng-model="franceConnectCtrl.apiKey" name="apiKey" required ng-disabled="franceConnectCtrl.dev">
                     <div ng-messages="franceConnectForm.apiKey.$error" role="alert">
                         <div ng-message="required" message-key="joant_franceConnectOAuthView.error.apiKey.required"></div>
                     </div>
@@ -66,7 +71,7 @@
 
                 <md-input-container flex>
                     <label message-key="joant_franceConnectOAuthView.label.apiSecret"></label>
-                    <input type="text" ng-model="franceConnectCtrl.apiSecret" name="apiSecret" required>
+                    <input type="text" ng-model="franceConnectCtrl.apiSecret" name="apiSecret" required ng-disabled="franceConnectCtrl.dev">
                     <div ng-messages="franceConnectForm.apiSecret.$error" role="alert">
                         <div ng-message="required" message-key="joant_franceConnectOAuthView.error.apiSecret.required"></div>
                     </div>
@@ -87,7 +92,7 @@
             <div layout="row">
                 <md-input-container class="md-block" flex>
                     <label message-key="joant_franceConnectOAuthView.label.callbackURL"></label>
-                    <input type="url" ng-model="franceConnectCtrl.callbackUrl" name="callbackUrl">
+                    <input type="url" ng-model="franceConnectCtrl.callbackUrl" name="callbackUrl" ng-disabled="franceConnectCtrl.dev">
                     <div class="hint" ng-show="franceConnectForm.callbackUrl.$valid" message-key="joant_franceConnectOAuthView.hint.callbackURL"></div>
                     <div ng-messages="franceConnectForm.callbackUrl.$error" ng-show="franceConnectForm.callbackUrl.$invalid" role="alert">
                         <div ng-message="url" message-key="joant_franceConnectOAuthView.error.callbackURL.notAValidURL"></div>
