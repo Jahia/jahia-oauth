@@ -184,6 +184,12 @@
 
     <!-- Franceconnect -->
 
+    <service ref="franceConnectConnectorImpl" interface="org.jahia.modules.jahiaauth.service.ConnectorService">
+        <service-properties>
+            <entry key="connectorServiceName" value="FranceConnectApi"/>
+        </service-properties>
+    </service>
+
     <bean id="franceConnectConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FranceConnectConnectorImpl">
         <property name="serviceName" value="FranceConnectApi"/>
         <property name="devMode" value="true"/>

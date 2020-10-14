@@ -85,7 +85,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     public String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams) {
         OAuth20Service service = createOAuth20Service(config);
 
-        return service.createAuthorizationUrlBuilder().state(sessionId).build();
+        return service.createAuthorizationUrlBuilder().additionalParams(additionalParams).state(sessionId).build();
     }
 
     @Override
