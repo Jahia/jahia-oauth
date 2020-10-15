@@ -25,14 +25,13 @@ package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
-import org.jahia.modules.jahiaauth.service.ConnectorService;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class FranceConnectConnectorImpl implements ConnectorService, OAuthConnectorService {
+public class FranceConnectConnectorImpl implements OAuthConnectorService {
 
     private Map<String, String> protectedResourceUrl;
     private List<ConnectorPropertyInfo> availableProperties;

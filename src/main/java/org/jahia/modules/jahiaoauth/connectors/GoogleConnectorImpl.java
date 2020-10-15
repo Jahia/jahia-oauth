@@ -25,7 +25,6 @@ package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
-import org.jahia.modules.jahiaauth.service.ConnectorService;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.io.IOException;
