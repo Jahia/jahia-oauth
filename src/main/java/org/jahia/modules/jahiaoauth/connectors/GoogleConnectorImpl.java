@@ -42,8 +42,8 @@ public class GoogleConnectorImpl implements OAuthConnectorService {
         return protectedResourceUrl;
     }
 
-    @Deprecated
     public String getProtectedResourceUrl() {
+        // Deprecated
         return null;
     }
 

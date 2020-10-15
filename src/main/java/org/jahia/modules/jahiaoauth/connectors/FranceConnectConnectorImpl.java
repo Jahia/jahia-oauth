@@ -43,6 +43,7 @@ public class FranceConnectConnectorImpl implements OAuthConnectorService {
 
     @Override
     public String getProtectedResourceUrl() {
+        // Deprecated
         return null;
     }
 
