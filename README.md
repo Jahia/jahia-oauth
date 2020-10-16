@@ -16,7 +16,6 @@ Download the jar and deploy it on your instance, then activate the module on the
 You will also need to download connectors and actions (mappers or providers) to use this module.
 
 ### HOW TO USE IT?
-Once you have downloaded at least one connector and one action module (type provider):
 * Go to your `site > site settings > Jahia Authentication`
 * In the panel you will see the list of OAuth connectors that are available for your site and if you open the card you will see the parameters to fill in order to activate and use it
 * You will need to go to the open authentication website of your connector to setup an app and get the parameters
@@ -26,6 +25,9 @@ Once you have downloaded at least one connector and one action module (type prov
 * Then in edit mode add the connection button of your connector to a page
 * Publish your site
 * Your users can now connect using open authentication
+
+### AVAILABLE CONNECTORS
+* Google open authentication - It allows you to display a button `Sign in with Google` on your site
 
 ### WHAT IS A CONNECTOR?
 A connector is a module that will allow your user to connect using the open authentication API like Facebook or LinkedIn.  
