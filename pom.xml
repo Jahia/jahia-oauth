@@ -70,7 +70,7 @@
         <jahia-static-resources>/css,/javascript,/icons</jahia-static-resources>
         <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)", org.jahia.license;filter:="(key=org.jahia.oauthConnector)"</require-capability>
         <jahia-key>org.jahia.oauthConnector</jahia-key>
-        <jahia-module-signature>MCwCFAxLNtzzs4bXEGVtDbaohBwdswj1AhQd2oQRSIFulgzgZrTss0xOn3GOjQ==</jahia-module-signature>
+        <jahia-module-signature>MCwCFD/oC33VCAUxkdAVLCxEO4NpesWzAhRSlgogi1wAH7Nnb5OaqCl5mIJEJg==</jahia-module-signature>
         <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
     </properties>
 
