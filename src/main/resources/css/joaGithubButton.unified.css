@@ -1,0 +1,58 @@
+.custom-btn-theme {
+    margin: 8px;
+    padding: 0 11px;
+    position: relative;
+    display: inline-block;
+    height: 40px;
+    cursor: pointer;
+    text-align: initial;
+    border: none;
+    color: transparent;
+    -webkit-appearance: none;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-transition: all 400ms ease 0s;
+    -moz-transition: all 400ms ease 0s;
+    -ms-transition: all 400ms ease 0s;
+    -o-transition: all 400ms ease 0s;
+    transition: all 400ms ease 0s;
+}
+
+.custom-btn-theme .custom-icon-svg {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 11px;
+}
+
+.custom-btn-theme p.btn-text {
+    margin: 0 0 0 36px;
+    font-size: 14px;
+    letter-spacing: .4px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+}
+
+a.custom-btn-theme p.btn-text {
+    margin-top: 11.5px;
+}
+
+.custom-btn-theme:hover {
+    -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .24);
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .24);
+    opacity: .9;
+}
+
+.github-btn {
+    background: #fff;
+}
+
+.github-btn.custom-btn-theme p.btn-text {
+    color: rgba(0, 0, 0, 0.54);
+}

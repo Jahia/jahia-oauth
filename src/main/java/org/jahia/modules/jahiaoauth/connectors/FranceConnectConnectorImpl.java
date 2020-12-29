@@ -41,7 +41,6 @@ public class FranceConnectConnectorImpl implements OAuthConnectorService {
         return protectedResourceUrl.get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
     }
 
-    @Override
     public String getProtectedResourceUrl() {
         // Deprecated
         return null;

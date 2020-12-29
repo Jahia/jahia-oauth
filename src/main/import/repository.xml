@@ -6,7 +6,7 @@
                    j:moduleType="module"
                    j:title="Jahia OAuth"
                    jcr:primaryType="jnt:module">
-                
+
                 <portlets jcr:primaryType="jnt:portletFolder"/>
                 <files jcr:primaryType="jnt:folder"/>
                 <contents jcr:primaryType="jnt:contentFolder"/>
@@ -40,8 +40,18 @@
                             <franceconnectoauthview jcr:primaryType="joant:franceConnectOAuthView"/>
                         </pagecontent>
                     </franceconnect-oauth-view>
+                    <github-oauth-view j:defaultTemplate="false"
+                                       j:hiddenTemplate="true"
+                                       j:invertCondition="false"
+                                       j:requireLoggedUser="false"
+                                       j:requirePrivilegedUser="false"
+                                       jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <franceconnectoauthview jcr:primaryType="joant:githubOAuthView"/>
+                        </pagecontent>
+                    </github-oauth-view>
                 </templates>
-                
+
                 <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">
                     <j:translation_en jcr:language="en"
                               jcr:mixinTypes="mix:title"
