@@ -34,12 +34,14 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * Auth linkedin connector
+ * Use linkedin credentials to connect to Jahia
  * @author dgaillard
  */
 public class LinkedInConnectorImpl implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
 
-    private String protectedResourceUrl;;
+    private String protectedResourceUrl;
     private List<ConnectorPropertyInfo> availableProperties;
 
     public String getProtectedResourceUrl() {
@@ -69,8 +71,9 @@ public class LinkedInConnectorImpl implements OAuthConnectorService {
                 }
             }
         }
-
-        logger.debug("Protected Resource URL = {}" + protectedResourceUrl + propertiesAsString);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Protected Resource URL = {}", protectedResourceUrl + propertiesAsString);
+        }
         return String.format(protectedResourceUrl, propertiesAsString);
     }
 
@@ -94,5 +97,6 @@ public class LinkedInConnectorImpl implements OAuthConnectorService {
 
     @Override
     public void validateSettings(ConnectorConfig settings) throws IOException {
+        // Done on client side.
     }
 }
