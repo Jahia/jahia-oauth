@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,7 +80,7 @@ public class LinkedInConnectorImpl implements OAuthConnectorService {
 
     @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return availableProperties;
+        return new ArrayList<>(availableProperties);
     }
 
     public String getServiceName() {
@@ -92,7 +93,7 @@ public class LinkedInConnectorImpl implements OAuthConnectorService {
     }
 
     public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
-        this.availableProperties = availableProperties;
+        this.availableProperties = new ArrayList<>(availableProperties);
     }
 
     @Override
