@@ -74,8 +74,19 @@ import java.util.Map;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
 
-    private Map<String, DefaultApi20> oAuthDefaultApi20Map;
+    private final Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaAuthMapperService jahiaAuthMapperService;
+
+    public JahiaOAuthServiceImpl() {
+        this.oAuthDefaultApi20Map = new HashMap<>();
+    }
+
+    public JahiaOAuthServiceImpl(Map<String, DefaultApi20> oAuthDefaultApi20Map) {
+        this();
+        if (oAuthDefaultApi20Map != null && !oAuthDefaultApi20Map.isEmpty()) {
+            oAuthDefaultApi20Map.forEach(this::addOAuthDefaultApi20);
+        }
+    }
 
     @Override
     public String getAuthorizationUrl(ConnectorConfig config, String sessionId) {
@@ -192,7 +203,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
             if (potentialKey1.length() <= potentialKey2.length()) {
                 key = potentialKey1;
-            } else if (potentialKey1.length() > potentialKey2.length()) {
+            } else {
                 key = potentialKey2;
             }
 
@@ -240,11 +251,26 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         if (StringUtils.isNotBlank(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE))) {
             serviceBuilder.withScope(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
-        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getProperty("oauthApiName") != null? config.getProperty("oauthApiName") : config.getConnectorName()));
+        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName()));
     }
 
-    public void setoAuthDefaultApi20Map(Map<String, DefaultApi20> oAuthDefaultApi20Map) {
-        this.oAuthDefaultApi20Map = oAuthDefaultApi20Map;
+    @Override
+    public void addOAuthDefaultApi20(String key, DefaultApi20 oAuthDefaultApi20) {
+        oAuthDefaultApi20Map.put(key, oAuthDefaultApi20);
+    }
+
+    @Override
+    public void removeOAuthDefaultApi20(String key) {
+        if (oAuthDefaultApi20Map.containsKey(key)) {
+            oAuthDefaultApi20Map.remove(key);
+        } else {
+            logger.warn("OAuthDefaultApi20 {} not found", key);
+        }
+    }
+
+    @Override
+    public void removeOAuthDefaultApi20(DefaultApi20 oAuthDefaultApi20) {
+        oAuthDefaultApi20Map.entrySet().stream().filter(entry -> entry.getValue().equals(oAuthDefaultApi20)).findFirst().ifPresent(oAuthDefaultApi20Entry -> oAuthDefaultApi20Map.remove(oAuthDefaultApi20Entry.getKey()));
     }
 
     public void setJahiaAuthMapperService(JahiaAuthMapperService jahiaAuthMapperService) {
