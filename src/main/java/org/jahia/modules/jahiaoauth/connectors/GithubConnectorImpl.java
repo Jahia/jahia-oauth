@@ -5,8 +5,12 @@ import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Github auth connector
+ */
 public class GithubConnectorImpl implements OAuthConnectorService {
 
     private String protectedResourceUrl;
@@ -19,7 +23,7 @@ public class GithubConnectorImpl implements OAuthConnectorService {
 
     @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return availableProperties;
+        return new ArrayList<>(availableProperties);
     }
 
     @Override
@@ -40,6 +44,6 @@ public class GithubConnectorImpl implements OAuthConnectorService {
     }
 
     public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
-        this.availableProperties = availableProperties;
+        this.availableProperties = new ArrayList<>(availableProperties);
     }
 }
