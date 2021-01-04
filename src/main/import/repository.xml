@@ -60,6 +60,16 @@
                             <linkedinoauthview jcr:primaryType="joant:linkedInOAuthView"/>
                         </pagecontent>
                     </linkedIn-oauth-view>
+                    <facebook-oauth-view j:defaultTemplate="false"
+                                         j:hiddenTemplate="true"
+                                         j:invertCondition="false"
+                                         j:requireLoggedUser="false"
+                                         j:requirePrivilegedUser="false"
+                                         jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <facebookoauthview jcr:primaryType="joant:facebookOAuthView"/>
+                        </pagecontent>
+                    </facebook-oauth-view>
                 </templates>
 
                 <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">
