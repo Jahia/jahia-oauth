@@ -434,7 +434,7 @@
         </service-properties>
     </service>
 
-    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.impl.LinkedInConnectorImpl">
+    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl">
         <property name="protectedResourceUrl" value="https://api.linkedin.com/v2/me"/>
         <property name="availableProperties">
             <list>

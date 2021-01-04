@@ -21,7 +21,7 @@
  *
  * ==========================================================================================
  */
-package org.jahia.modules.jahiaoauth.impl;
+package org.jahia.modules.jahiaoauth.connectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;

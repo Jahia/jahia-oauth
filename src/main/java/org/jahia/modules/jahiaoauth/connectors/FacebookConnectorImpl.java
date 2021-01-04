@@ -31,9 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Use Facebook credentials to connect to Jahia
  * @author dgaillard
  */
 public class FacebookConnectorImpl implements OAuthConnectorService {
@@ -69,14 +71,15 @@ public class FacebookConnectorImpl implements OAuthConnectorService {
                 }
             }
         }
-
-        logger.debug("Protected Resource URL = " + protectedResourceUrl + propertiesAsString);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Protected Resource URL = {}", protectedResourceUrl + propertiesAsString);
+        }
         return protectedResourceUrl + propertiesAsString;
     }
 
     @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return availableProperties;
+        return new ArrayList<>(availableProperties);
     }
 
     public String getServiceName() {
@@ -89,10 +92,11 @@ public class FacebookConnectorImpl implements OAuthConnectorService {
     }
 
     public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
-        this.availableProperties = availableProperties;
+        this.availableProperties = new ArrayList<>(availableProperties);
     }
 
     @Override
     public void validateSettings(ConnectorConfig settings) throws IOException {
+        // Check done client side
     }
 }
