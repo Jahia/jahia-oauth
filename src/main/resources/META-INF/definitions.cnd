@@ -25,3 +25,8 @@
 
 [joant:githubButton] > jnt:content, joamix:oauthButtonConnector
  - buttonColor (string, choicelist[resourceBundle]) = 'light' < 'light', 'dark'
+
+ [joant:linkedInOAuthView] > jnt:content, jmix:authConnectorSettingView
+
+ [joant:linkedInButton] > jnt:content, joamix:oauthButtonConnector
+  - buttonSize (string,choicelist[resourceBundle]) = 'large' < 'large', 'small'

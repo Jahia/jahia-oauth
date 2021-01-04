@@ -50,6 +50,16 @@
                             <franceconnectoauthview jcr:primaryType="joant:githubOAuthView"/>
                         </pagecontent>
                     </github-oauth-view>
+                    <linkedIn-oauth-view j:defaultTemplate="false"
+                                         j:hiddenTemplate="true"
+                                         j:invertCondition="false"
+                                         j:requireLoggedUser="false"
+                                         j:requirePrivilegedUser="false"
+                                         jcr:primaryType="jnt:contentTemplate">
+                        <pagecontent jcr:primaryType="jnt:contentList">
+                            <linkedinoauthview jcr:primaryType="joant:linkedInOAuthView"/>
+                        </pagecontent>
+                    </linkedIn-oauth-view>
                 </templates>
 
                 <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">
