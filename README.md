@@ -31,15 +31,10 @@ You will also need to download connectors and actions (mappers or providers) to 
 - It allows you to display a button `Sign in with Google` on your site
 #### LinkedIn open authentication 
 - It allows you to display a button `Sign in with LinkedIn` on your site
-* Go to your `site > site settings > Jahia OAuth`
-* In the panel you will see the LinkedIn OAuth Connector
-* You will need to go to the LinkedIn developer website and setup an app to get the parameters. Please refer to the documentation on their website
-* Once this is done a new button will appear `Actions` and if you click on it you will access to the action modules part
-* On this part you can activate as many action modules type mapper as you which but you can only activate one provider
-* Create a mapping for the provider
-* Then in edit mode add the LinkedIn connection button to a page  
-* Publish your site
-* Your users can now connect using LinkedIn open authentication
+#### Facebook open authentication 
+- It allows you to display a button `Sign in with Facebook` on your site
+#### GitHub open authentication 
+- It allows you to display a button `Sign in with GitHub` on your site
 ### WHAT IS A CONNECTOR?
 A connector is a module that will allow your user to connect using the open authentication API like Facebook or LinkedIn.  
 You can find connectors made by Jahia:
