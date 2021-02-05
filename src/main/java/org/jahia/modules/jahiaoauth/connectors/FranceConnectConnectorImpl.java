@@ -24,49 +24,22 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
-import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
-public class FranceConnectConnectorImpl implements OAuthConnectorService {
+public class FranceConnectConnectorImpl extends Connector implements OAuthConnectorService {
 
     private Map<String, String> protectedResourceUrl;
-    private List<ConnectorPropertyInfo> availableProperties;
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        return protectedResourceUrl.get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
-    }
-
-    public String getProtectedResourceUrl() {
-        // Deprecated
-        return null;
+        return protectedResourceUrl
+                .get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
     }
 
     public void setProtectedResourceUrl(Map<String, String> protectedResourceUrl) {
         this.protectedResourceUrl = protectedResourceUrl;
-    }
-
-    @Override
-    public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return availableProperties;
-    }
-
-    public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
-        this.availableProperties = availableProperties;
-    }
-
-    public String getServiceName() {
-        // Deprecated
-        return null;
-    }
-
-    @Override
-    public void validateSettings(ConnectorConfig settings) throws IOException {
-        // Do nothing
     }
 
 }

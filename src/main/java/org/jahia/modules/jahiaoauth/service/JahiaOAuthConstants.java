@@ -62,7 +62,6 @@ public class JahiaOAuthConstants {
     public static final String TOKEN_SCOPE = "tokenScope";
     public static final String TOKEN_TYPE = "tokenType";
     public static final String AUTHORIZATION_URL = "authorizationUrl";
-    public static final String JAHIA_OAUTH_NODE_NAME = "jahiaOAuth";
 
     private JahiaOAuthConstants() {
     }

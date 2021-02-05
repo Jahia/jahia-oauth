@@ -23,80 +23,30 @@
  */
 package org.jahia.modules.jahiaoauth.connectors;
 
-import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
-import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Use Facebook credentials to connect to Jahia
+ *
  * @author dgaillard
  */
-public class FacebookConnectorImpl implements OAuthConnectorService {
+public class FacebookConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(FacebookConnectorImpl.class);
-
-    private String protectedResourceUrl;
-    private List<ConnectorPropertyInfo> availableProperties;
-
-    public String getProtectedResourceUrl() {
-        // Deprecated
-        return null;
-    }
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        StringBuilder propertiesAsString = new StringBuilder();
-        boolean asPrevious = false;
-        for (ConnectorPropertyInfo entry : getAvailableProperties()) {
-            if (entry.getPropertyToRequest() == null) {
-                if (asPrevious) {
-                    propertiesAsString.append(",");
-                }
-                propertiesAsString.append(entry.getName());
-                asPrevious = true;
-            } else {
-                String propertyToRequest = entry.getPropertyToRequest();
-                if (!StringUtils.contains(propertiesAsString.toString(), propertyToRequest)) {
-                    if (asPrevious) {
-                        propertiesAsString.append(",");
-                    }
-                    propertiesAsString.append(propertyToRequest);
-                    asPrevious = true;
-                }
-            }
-        }
+        String urlWithProperties = protectedResourceUrl.concat(getAvailableProperties().stream()
+                .map(property -> property.getPropertyToRequest() == null ? property.getName() : property.getPropertyToRequest()).distinct()
+                .collect(Collectors.joining(",")));
+
         if (logger.isDebugEnabled()) {
-            logger.debug("Protected Resource URL = {}", protectedResourceUrl + propertiesAsString);
+            logger.debug("Protected Resource URL = {}", urlWithProperties);
         }
-        return protectedResourceUrl + propertiesAsString;
-    }
-
-    @Override
-    public List<ConnectorPropertyInfo> getAvailableProperties() {
-        return new ArrayList<>(availableProperties);
-    }
-
-    public String getServiceName() {
-        // Deprecated
-        return null;
-    }
-
-    public void setProtectedResourceUrl(String protectedResourceUrl) {
-        this.protectedResourceUrl = protectedResourceUrl;
-    }
-
-    public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
-        this.availableProperties = new ArrayList<>(availableProperties);
-    }
-
-    @Override
-    public void validateSettings(ConnectorConfig settings) throws IOException {
-        // Check done client side
+        return urlWithProperties;
     }
 }

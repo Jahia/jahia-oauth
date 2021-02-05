@@ -50,7 +50,6 @@ import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthent
 public class FranceConnectApi extends DefaultApi20 {
     private String accessTokenEndpoint;
     private String authorizationBaseUrl;
-    private String userInfoUrl;
 
     protected FranceConnectApi() {
     }

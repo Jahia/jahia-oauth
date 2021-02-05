@@ -24,29 +24,32 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Auth linkedin connector
- * Use linkedin credentials to connect to Jahia
- *
- * @author dgaillard
- */
-public class LinkedInConnectorImpl extends Connector implements OAuthConnectorService {
-    private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
+public abstract class Connector implements OAuthConnectorService {
+
+    protected String protectedResourceUrl;
+    protected List<ConnectorPropertyInfo> availableProperties;
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        String urlWithProperties = protectedResourceUrl.concat(getAvailableProperties().stream()
-                .map(property -> property.getPropertyToRequest() == null ? property.getName() : property.getPropertyToRequest()).distinct()
-                .collect(Collectors.joining(",")));
-        if (logger.isDebugEnabled()) {
-            logger.debug("Protected Resource URL = {}", urlWithProperties);
-        }
-        return urlWithProperties;
+        return protectedResourceUrl;
+    }
+
+    @Override
+    public List<ConnectorPropertyInfo> getAvailableProperties() {
+        return availableProperties;
+    }
+
+    public void setProtectedResourceUrl(String protectedResourceUrl) {
+        this.protectedResourceUrl = protectedResourceUrl;
+    }
+
+    public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
+        this.availableProperties = new ArrayList<>(availableProperties);
     }
 }

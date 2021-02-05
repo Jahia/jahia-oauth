@@ -2,23 +2,23 @@
  * ==========================================================================================
  * =                            JAHIA'S ENTERPRISE DISTRIBUTION                             =
  * ==========================================================================================
- *
- *                                  http://www.jahia.com
- *
+ * <p>
+ * http://www.jahia.com
+ * <p>
  * JAHIA'S ENTERPRISE DISTRIBUTIONS LICENSING - IMPORTANT INFORMATION
  * ==========================================================================================
- *
- *     Copyright (C) 2002-2020 Jahia Solutions Group. All rights reserved.
- *
- *     This file is part of a Jahia's Enterprise Distribution.
- *
- *     Jahia's Enterprise Distributions must be used in accordance with the terms
- *     contained in the Jahia Solutions Group Terms & Conditions as well as
- *     the Jahia Sustainable Enterprise License (JSEL).
- *
- *     For questions regarding licensing, support, production usage...
- *     please contact our team at sales@jahia.com or go to http://www.jahia.com/license.
- *
+ * <p>
+ * Copyright (C) 2002-2020 Jahia Solutions Group. All rights reserved.
+ * <p>
+ * This file is part of a Jahia's Enterprise Distribution.
+ * <p>
+ * Jahia's Enterprise Distributions must be used in accordance with the terms
+ * contained in the Jahia Solutions Group Terms & Conditions as well as
+ * the Jahia Sustainable Enterprise License (JSEL).
+ * <p>
+ * For questions regarding licensing, support, production usage...
+ * please contact our team at sales@jahia.com or go to http://www.jahia.com/license.
+ * <p>
  * ==========================================================================================
  */
 package org.jahia.modules.jahiaoauth.action;
@@ -50,14 +50,13 @@ public class ConnectToOAuthProvider extends Action {
     private Map<String, String> additionalParams;
 
     @Override
-    public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource,
-                                  JCRSessionWrapper session, Map<String, List<String>> parameters,
-                                  URLResolver urlResolver) throws Exception {
+    public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session,
+            Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
 
         final String sessionId = req.getSession().getId();
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        String authorizationUrl =  jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
+        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
 
         JSONObject response = new JSONObject();
         response.put(JahiaOAuthConstants.AUTHORIZATION_URL, authorizationUrl);
