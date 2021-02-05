@@ -58,6 +58,15 @@ public interface JahiaOAuthService {
     /**
      * This method will get the authorization URL so a connector can display the authentication popup to the user
      *
+     * @param config    The oauth config for the connector
+     * @param sessionId String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
+     * @return String authorization URL
+     */
+    String getAuthorizationUrl(ConnectorConfig config, String sessionId);
+
+    /**
+     * This method will get the authorization URL so a connector can display the authentication popup to the user
+     *
      * @param config           The oauth config for the connector
      * @param sessionId        String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
      * @param additionalParams additional parameter required to get the authorization URL

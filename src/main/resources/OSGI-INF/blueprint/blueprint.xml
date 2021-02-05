@@ -207,7 +207,7 @@
     </service>
 
     <bean id="franceConnectConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FranceConnectConnectorImpl">
-        <property name="protectedResourceUrl">
+        <property name="mapProtectedResourceUrl">
             <map>
                 <entry key="FranceConnectApi" value="https://app.franceconnect.gouv.fr/api/v1/userinfo"/>
                 <entry key="FranceConnectApiDev" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/userinfo"/>

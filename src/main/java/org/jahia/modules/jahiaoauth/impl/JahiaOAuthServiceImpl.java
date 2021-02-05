@@ -1,45 +1,25 @@
 /*
  * ==========================================================================================
- * =                   JAHIA'S DUAL LICENSING - IMPORTANT INFORMATION                       =
+ * =                            JAHIA'S ENTERPRISE DISTRIBUTION                             =
  * ==========================================================================================
  *
- *                                 http://www.jahia.com
+ *                                  http://www.jahia.com
  *
- *     Copyright (C) 2002-2020 Jahia Solutions Group SA. All rights reserved.
+ * JAHIA'S ENTERPRISE DISTRIBUTIONS LICENSING - IMPORTANT INFORMATION
+ * ==========================================================================================
  *
- *     THIS FILE IS AVAILABLE UNDER TWO DIFFERENT LICENSES:
- *     1/GPL OR 2/JSEL
+ *     Copyright (C) 2002-2020 Jahia Solutions Group. All rights reserved.
  *
- *     1/ GPL
- *     ==================================================================================
+ *     This file is part of a Jahia's Enterprise Distribution.
  *
- *     IF YOU DECIDE TO CHOOSE THE GPL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
+ *     Jahia's Enterprise Distributions must be used in accordance with the terms
+ *     contained in the Jahia Solutions Group Terms & Conditions as well as
+ *     the Jahia Sustainable Enterprise License (JSEL).
  *
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ *     For questions regarding licensing, support, production usage...
+ *     please contact our team at sales@jahia.com or go to http://www.jahia.com/license.
  *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *
- *     2/ JSEL - Commercial and Supported Versions of the program
- *     ===================================================================================
- *
- *     IF YOU DECIDE TO CHOOSE THE JSEL LICENSE, YOU MUST COMPLY WITH THE FOLLOWING TERMS:
- *
- *     Alternatively, commercial and supported versions of the program - also known as
- *     Enterprise Distributions - must be used in accordance with the terms and conditions
- *     contained in a separate written agreement between you and Jahia Solutions Group SA.
- *
- *     If you are unsure which license is appropriate for your use,
- *     please contact the sales department at sales@jahia.com.
+ * ==========================================================================================
  */
 package org.jahia.modules.jahiaoauth.impl;
 
@@ -51,7 +31,12 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
-import org.jahia.modules.jahiaauth.service.*;
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
+import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
+import org.jahia.modules.jahiaauth.service.JahiaAuthMapperService;
+import org.jahia.modules.jahiaauth.service.MapperConfig;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthException;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
@@ -108,11 +93,17 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
+    public String getAuthorizationUrl(ConnectorConfig config, String sessionId) {
+        return getAuthorizationUrl(config, sessionId, null);
+    }
+
+    @Override
     public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
 
-        OAuthConnectorService connectorService = BundleUtils.getOsgiService(OAuthConnectorService.class, "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
+        OAuthConnectorService connectorService = BundleUtils.getOsgiService(OAuthConnectorService.class,
+                "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
         if (connectorService == null) {
             logger.error("Connector service was null for service name: {}", config.getConnectorName());
             throw new JahiaOAuthException("Connector service was null for service name: " + config.getConnectorName());
@@ -143,12 +134,16 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(), response.getBody());
+                logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(),
+                        response.getBody());
                 throw e;
             }
         } else {
-            logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}", response.getCode(), response.getMessage(), response.getBody());
-            throw new JahiaOAuthException("Did not received expected response, response code: " + response.getCode() + ", response message: " + response.getMessage() + " response body was: " + response.getBody());
+            logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}",
+                    response.getCode(), response.getMessage(), response.getBody());
+            throw new JahiaOAuthException(
+                    "Did not received expected response, response code: " + response.getCode() + ", response message: " + response
+                            .getMessage() + " response body was: " + response.getBody());
         }
     }
 
@@ -173,15 +168,18 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         return propertiesResult;
     }
 
-    private void getPropertyResult(JSONObject responseJson, Map<String, Object> propertiesResult, ConnectorPropertyInfo entry) throws JSONException {
+    private void getPropertyResult(JSONObject responseJson, Map<String, Object> propertiesResult, ConnectorPropertyInfo entry)
+            throws JSONException {
         if (entry.getPropertyToRequest() == null && responseJson.has(entry.getName())) {
             propertiesResult.put(entry.getName(), responseJson.get(entry.getName()));
         } else if (entry.getPropertyToRequest() != null && responseJson.has(entry.getPropertyToRequest())) {
             if (entry.getValuePath() != null) {
                 if (StringUtils.startsWith(entry.getValuePath(), "/")) {
-                    extractPropertyFromJSONObject(propertiesResult, responseJson.getJSONObject(entry.getPropertyToRequest()), entry.getValuePath(), entry.getName());
+                    extractPropertyFromJSONObject(propertiesResult, responseJson.getJSONObject(entry.getPropertyToRequest()),
+                            entry.getValuePath(), entry.getName());
                 } else {
-                    extractPropertyFromJSONArray(propertiesResult, responseJson.getJSONArray(entry.getPropertyToRequest()), entry.getValuePath(), entry.getName());
+                    extractPropertyFromJSONArray(propertiesResult, responseJson.getJSONArray(entry.getPropertyToRequest()),
+                            entry.getValuePath(), entry.getName());
                 }
             } else {
                 propertiesResult.put(entry.getName(), responseJson.get(entry.getPropertyToRequest()));
@@ -189,7 +187,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty, String propertyName) throws JSONException {
+    private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty,
+            String propertyName) throws JSONException {
         if (StringUtils.startsWith(pathToProperty, "/")) {
 
             String key = StringUtils.substringAfter(pathToProperty, "/");
@@ -216,7 +215,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult, String siteKey) {
+    private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult,
+            String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
         propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
@@ -224,7 +224,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         propertiesResult.put(JahiaAuthConstants.PROPERTY_SITE_KEY, siteKey);
     }
 
-    private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty, String propertyName) throws JSONException {
+    private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty,
+            String propertyName) throws JSONException {
         int arrayIndex = Integer.parseInt(StringUtils.substringBetween(pathToProperty, "[", "]"));
         pathToProperty = StringUtils.substringAfter(pathToProperty, "]");
         if (StringUtils.isBlank(pathToProperty) && jsonArray.length() >= arrayIndex) {
@@ -241,12 +242,14 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private OAuth20Service createOAuth20Service(ConnectorConfig config) {
         String callbackUrl = config.getProperty(JahiaOAuthConstants.PROPERTY_CALLBACK_URL);
 
-        ServiceBuilder serviceBuilder = new ServiceBuilder(config.getProperty(JahiaOAuthConstants.PROPERTY_API_KEY)).apiSecret(config.getProperty(JahiaOAuthConstants.PROPERTY_API_SECRET)).callback(callbackUrl);
+        ServiceBuilder serviceBuilder = new ServiceBuilder(config.getProperty(JahiaOAuthConstants.PROPERTY_API_KEY))
+                .apiSecret(config.getProperty(JahiaOAuthConstants.PROPERTY_API_SECRET)).callback(callbackUrl);
 
         if (StringUtils.isNotBlank(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE))) {
             serviceBuilder.withScope(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
-        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName()));
+        return serviceBuilder.build(oAuthDefaultApi20Map
+                .get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName()));
     }
 
     @Override
@@ -265,7 +268,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Override
     public void removeOAuthDefaultApi20(DefaultApi20 oAuthDefaultApi20) {
-        oAuthDefaultApi20Map.entrySet().stream().filter(entry -> entry.getValue().equals(oAuthDefaultApi20)).findFirst().ifPresent(oAuthDefaultApi20Entry -> oAuthDefaultApi20Map.remove(oAuthDefaultApi20Entry.getKey()));
+        oAuthDefaultApi20Map.entrySet().stream().filter(entry -> entry.getValue().equals(oAuthDefaultApi20)).findFirst()
+                .ifPresent(oAuthDefaultApi20Entry -> oAuthDefaultApi20Map.remove(oAuthDefaultApi20Entry.getKey()));
     }
 
     public void setJahiaAuthMapperService(JahiaAuthMapperService jahiaAuthMapperService) {
