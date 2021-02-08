@@ -34,4 +34,4 @@
 [joant:facebookOAuthView] > jnt:content, jmix:authConnectorSettingView
 
 [joant:facebookButton] > jnt:content, joamix:oauthButtonConnector
- - buttonSize (string,choicelist[resourceBundle]) = 'large' < 'large', 'small', 'medium', 'xlarge'
+ - buttonSize (string,choicelist[resourceBundle]) = 'large' < 'large', 'small'

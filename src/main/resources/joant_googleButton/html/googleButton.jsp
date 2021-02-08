@@ -20,7 +20,7 @@
     <c:set var="htmlId" value="${currentNode.properties['htmlId'].string}"/>
     <c:set var="tagType" value="${currentNode.properties['tagType'].string}"/>
     <template:addResources type="css" resources="joaFontRoboto.css"/>
-    <template:addResources type="css" resources="joaGoogleButton.css"/>
+    <template:addResources type="css" resources="button.css"/>
 
     <template:addResources>
         <script>
@@ -55,11 +55,11 @@
             <c:choose>
                 <c:when test="${currentNode.properties['buttonColor'].string eq 'light'}">
                     <!-- Light -->
-                    <button class="google-btn-light ${cssClass}"
+                    <button class="btn-light button-large ${cssClass}"
                         <c:if test="${not renderContext.editMode}"> onclick="connectToGoogle${fn:replace(currentNode.identifier, '-', '')}()" </c:if>
                         <c:if test="${not empty htmlId}"> id="${htmlId}"</c:if>
                         <c:if test="${renderContext.editMode}">disabled</c:if> >
-                        <span class="google-icon-svg">
+                        <span class="icon-svg">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48">
                                 <defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs>
                                 <clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath>
@@ -74,12 +74,12 @@
                 </c:when>
                 <c:otherwise>
                     <!-- Dark -->
-                    <button class="google-btn-dark ${cssClass}"
+                    <button class="btn-dark button-large ${cssClass}"
                         <c:if test="${not renderContext.editMode}"> onclick="connectToGoogle${fn:replace(currentNode.identifier, '-', '')}()" </c:if>
                         <c:if test="${not empty htmlId}"> id="${htmlId}"</c:if>
                         <c:if test="${renderContext.editMode}">disabled</c:if> >
-                        <span class="google-svg-container">
-                            <span class="google-icon-svg">
+                        <span class="svg-container">
+                            <span class="icon-svg">
                                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48">
                                     <defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs>
                                     <clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath>
@@ -99,11 +99,11 @@
             <c:choose>
                 <c:when test="${currentNode.properties['buttonColor'].string eq 'light'}">
                     <!-- Light -->
-                    <a class="google-btn-light ${cssClass}" href="#"
+                    <a class="btn-light  button-large ${cssClass}" href="#"
                             <c:if test="${not renderContext.editMode}"> onclick="connectToGoogle${fn:replace(currentNode.identifier, '-', '')}();return false;" </c:if>
                             <c:if test="${not empty htmlId}"> id="${htmlId}"</c:if>
                        <c:if test="${renderContext.editMode}">disabled</c:if> >
-                        <span class="google-icon-svg">
+                        <span class="icon-svg">
                             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48">
                                 <defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs>
                                 <clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath>
@@ -118,12 +118,12 @@
                 </c:when>
                 <c:otherwise>
                     <!-- Dark -->
-                    <a class="google-btn-dark ${cssClass}" href="#"
+                    <a class="btn-dark button-large ${cssClass}" href="#"
                        <c:if test="${not renderContext.editMode}"> onclick="connectToGoogle${fn:replace(currentNode.identifier, '-', '')}();return false;" </c:if>
                         <c:if test="${not empty htmlId}"> id="${htmlId}"</c:if>
                         <c:if test="${renderContext.editMode}">disabled</c:if> >
-                        <span class="google-svg-container">
-                            <span class="google-icon-svg">
+                        <span class="svg-container">
+                            <span class="icon-svg">
                                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 48 48">
                                     <defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs>
                                     <clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath>
