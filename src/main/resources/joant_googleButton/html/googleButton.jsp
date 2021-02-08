@@ -16,6 +16,8 @@
 <%--@elvariable id="renderContext" type="org.jahia.services.render.RenderContext"--%>
 <%--@elvariable id="currentResource" type="org.jahia.services.render.Resource"--%>
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
+
+<c:if test="${renderContext.user.name == 'guest' or renderContext.editMode}">
     <c:set var="cssClass" value="${currentNode.properties['cssClass'].string}"/>
     <c:set var="htmlId" value="${currentNode.properties['htmlId'].string}"/>
     <c:set var="tagType" value="${currentNode.properties['tagType'].string}"/>
@@ -140,3 +142,4 @@
             </c:choose>
         </c:otherwise>
     </c:choose>
+</c:if>
