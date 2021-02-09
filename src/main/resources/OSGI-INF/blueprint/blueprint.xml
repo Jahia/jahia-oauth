@@ -435,7 +435,12 @@
     </service>
 
     <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl">
-        <property name="protectedResourceUrl" value="https://api.linkedin.com/v2/me"/>
+        <property name="protectedResourceUrls">
+            <list>
+                <value>https://api.linkedin.com/v2/emailAddress?q=members&amp;projection=(elements*(handle~))</value>
+                <value>https://api.linkedin.com/v2/me?projection=(%s)</value>
+            </list>
+        </property>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -451,85 +456,95 @@
                     <property name="valueType" value="string"/>
                 </bean>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="pictureUrl"/>
+                    <property name="name" value="profilePicture(displayImage~:playableStreams)"/>
                     <property name="valueType" value="string"/>
+                    <property name="propertyToRequest" value="profilePicture"/>
+                    <property name="valuePath" value="/displayImage~/elements[0]/identifiers[0]/identifier"/>
                 </bean>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
                     <property name="name" value="emailAddress"/>
                     <property name="valueType" value="email"/>
+                    <property name="valuePath" value="[0]/handle~/emailAddress"/>
+                    <property name="propertyToRequest" value="elements"/>
                 </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="publicProfileUrl"/>
-                    <property name="valueType" value="string"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="industry"/>
-                    <property name="valueType" value="string"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="locationName"/>
-                    <property name="propertyToRequest" value="location"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/name"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="locationCountryCode"/>
-                    <property name="propertyToRequest" value="location"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/country/code"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="headline"/>
-                    <property name="valueType" value="string"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="currentPositionTitle"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/title"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="currentPositionSummary"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/summary"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="currentPositionCountryCode"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/location/country/code"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="currentPositionCountryName"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/location/country/name"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="companyName"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/company/name"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="companyIndustry"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/company/industry"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="companySize"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/company/size"/>
-                </bean>
-                <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="companyType"/>
-                    <property name="propertyToRequest" value="positions"/>
-                    <property name="valueType" value="string"/>
-                    <property name="valuePath" value="/values[0]/company/type"/>
-                </bean>
+                <!--
+                Since connector v2, these properties are not available anymore in the lite profile.
+                You can set the following properties regarding your application capabilities, like requesting the full
+                profile, by providing the property to request and the value path from the returned json requested.
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="publicProfileUrl"/>
+    <property name="valueType" value="string"/>
+</bean>
+
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="industry"/>
+    <property name="valueType" value="string"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="locationName"/>
+    <property name="propertyToRequest" value="location"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/name"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="locationCountryCode"/>
+    <property name="propertyToRequest" value="location"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/country/code"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="headline"/>
+    <property name="valueType" value="string"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="currentPositionTitle"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/title"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="currentPositionSummary"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/summary"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="currentPositionCountryCode"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/location/country/code"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="currentPositionCountryName"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/location/country/name"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="companyName"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/company/name"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="companyIndustry"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/company/industry"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="companySize"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/company/size"/>
+</bean>
+<bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
+    <property name="name" value="companyType"/>
+    <property name="propertyToRequest" value="positions"/>
+    <property name="valueType" value="string"/>
+    <property name="valuePath" value="/values[0]/company/type"/>
+</bean>
+-->
             </list>
         </property>
     </bean>

@@ -109,41 +109,51 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             throw new JahiaOAuthException("Connector service was null for service name: " + config.getConnectorName());
         }
 
-        // Request all the properties available right now
-        OAuthRequest request = new OAuthRequest(Verb.GET, connectorService.getProtectedResourceUrl(config));
-        request.addHeader("x-li-format", "json");
-        service.signRequest(accessToken, request);
-        Response response = service.execute(request);
+        Map<String, Object> propertiesResult = new HashMap<>();
 
-        // if we got the properties then execute mapper
-        if (response.getCode() == HttpServletResponse.SC_OK) {
-            try {
-                JSONObject responseJson = new JSONObject(response.getBody());
-                if (logger.isDebugEnabled()) {
-                    logger.debug(responseJson.toString());
-                }
+        List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
+        for (String url : urlsToProcess) {
+            // Request all the properties available right now
+            OAuthRequest request = new OAuthRequest(Verb.GET, url);
+            request.addHeader("x-li-format", "json");
+            service.signRequest(accessToken, request);
+            Response response = service.execute(request);
 
-                // Store in a simple map the results by properties as mapped in the connector
-                Map<String, Object> propertiesResult = getPropertiesResult(connectorService, responseJson);
-                addTokensData(config.getConnectorName(), accessToken, propertiesResult, config.getSiteKey());
-
-                // Get Mappers
-                for (MapperConfig mapperConfig : config.getMappers()) {
-                    if (mapperConfig.isActive()) {
-                        jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
+            // if we got the properties then execute mapper
+            if (response.getCode() == HttpServletResponse.SC_OK) {
+                try {
+                    JSONObject responseJson = new JSONObject(response.getBody());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(responseJson.toString());
                     }
+
+                    // Store in a simple map the results by properties as mapped in the connector
+                    propertiesResult.putAll(getPropertiesResult(connectorService, responseJson));
+                } catch (Exception e) {
+                    logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(),
+                            response.getBody());
+                    throw e;
                 }
-            } catch (Exception e) {
-                logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(),
-                        response.getBody());
-                throw e;
+            } else {
+                logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}",
+                        response.getCode(), response.getMessage(), response.getBody());
+                throw new JahiaOAuthException(
+                        "Did not received expected response, response code: " + response.getCode() + ", response message: " + response
+                                .getMessage() + " response body was: " + response.getBody());
             }
-        } else {
-            logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}",
-                    response.getCode(), response.getMessage(), response.getBody());
-            throw new JahiaOAuthException(
-                    "Did not received expected response, response code: " + response.getCode() + ", response message: " + response
-                            .getMessage() + " response body was: " + response.getBody());
+        }
+
+        try {
+            addTokensData(config.getConnectorName(), accessToken, propertiesResult, config.getSiteKey());
+
+            // Get Mappers
+            for (MapperConfig mapperConfig : config.getMappers()) {
+                if (mapperConfig.isActive()) {
+                    jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
+                }
+            }
+        } catch (Exception e) {
+            throw new JahiaOAuthException("Something when wrong in OAuth with config " + config.getConnectorName(), e);
         }
     }
 
@@ -188,7 +198,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty,
-            String propertyName) throws JSONException {
+                                               String propertyName) throws JSONException {
         if (StringUtils.startsWith(pathToProperty, "/")) {
 
             String key = StringUtils.substringAfter(pathToProperty, "/");
@@ -216,7 +226,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult,
-            String siteKey) {
+                               String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
         propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
@@ -225,7 +235,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty,
-            String propertyName) throws JSONException {
+                                              String propertyName) throws JSONException {
         int arrayIndex = Integer.parseInt(StringUtils.substringBetween(pathToProperty, "[", "]"));
         pathToProperty = StringUtils.substringAfter(pathToProperty, "]");
         if (StringUtils.isBlank(pathToProperty) && jsonArray.length() >= arrayIndex) {

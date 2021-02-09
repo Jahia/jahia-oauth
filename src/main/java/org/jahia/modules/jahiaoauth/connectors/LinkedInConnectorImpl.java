@@ -28,6 +28,7 @@ import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -41,12 +42,23 @@ public class LinkedInConnectorImpl extends Connector implements OAuthConnectorSe
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        String urlWithProperties = protectedResourceUrl.concat(getAvailableProperties().stream()
+       return getProtectedResourceUrl(protectedResourceUrl);
+    }
+
+    @Override
+    public List<String> getProtectedResourceUrls(ConnectorConfig config) {
+        return protectedResourceUrls.stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
+    }
+
+    private String getProtectedResourceUrl(String protectedResourceUrl) {
+        final String properties = getAvailableProperties().stream()
                 .map(property -> property.getPropertyToRequest() == null ? property.getName() : property.getPropertyToRequest()).distinct()
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(","));
+        String urlWithProperties = String.format(protectedResourceUrl, properties);
         if (logger.isDebugEnabled()) {
             logger.debug("Protected Resource URL = {}", urlWithProperties);
         }
         return urlWithProperties;
     }
+
 }

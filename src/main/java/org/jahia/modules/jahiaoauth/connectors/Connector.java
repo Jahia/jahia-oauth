@@ -33,6 +33,7 @@ import java.util.List;
 public abstract class Connector implements OAuthConnectorService {
 
     protected String protectedResourceUrl;
+    protected List<String> protectedResourceUrls;
     protected List<ConnectorPropertyInfo> availableProperties;
 
     @Override
@@ -51,5 +52,9 @@ public abstract class Connector implements OAuthConnectorService {
 
     public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
         this.availableProperties = new ArrayList<>(availableProperties);
+    }
+
+    public void setProtectedResourceUrls(List<String> protectedResourceUrls) {
+        this.protectedResourceUrls = protectedResourceUrls;
     }
 }
