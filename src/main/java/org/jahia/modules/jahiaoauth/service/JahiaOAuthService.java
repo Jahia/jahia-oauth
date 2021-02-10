@@ -126,9 +126,25 @@ public interface JahiaOAuthService {
     Map<String, Object> requestUserData(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String mapperServiceName, String refreshToken) throws Exception;
 
     /**
-     * This method allow to set oAuthBase20ApiMap property
+     * This method will register a new Scribe Api 2.0 implementation
      *
-     * @param oAuthBase20ApiMap Map contains key value of scribejava API
+     * @param key               api key
+     * @param oAuth20Service scribe Api 2.0 implementation
      */
-    void setoAuthBase20ApiMap(Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap);
+    void addOAuth20Service(String key, BaseApi<? extends OAuth20Service> oAuth20Service);
+
+    /**
+     * This method will unregister a scribe Api 2.0 by its key
+     *
+     * @param key api key
+     */
+    void removeOAuth20Service(String key);
+
+
+    /**
+     * This method will unregister a scribe Api 2.0 by its implementation
+     *
+     * @param oAuth20Service api implementation
+     */
+    void removeOAuth20Service(BaseApi<? extends OAuth20Service> oAuth20Service);
 }

@@ -6,7 +6,7 @@
                            http://www.eclipse.org/gemini/blueprint/schema/blueprint http://www.eclipse.org/gemini/blueprint/schema/blueprint/gemini-blueprint.xsd">
 
     <bean id="jahiaOAuthServiceImpl" class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthServiceImpl">
-        <property name="oAuthBase20ApiMap">
+        <constructor-arg name="oAuthBase20ApiMap">
             <map>
                 <entry key="LinkedInApi20">
                     <bean class="com.github.scribejava.apis.LinkedInApi20"/>
@@ -81,7 +81,7 @@
                     <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi"/>
                 </entry>
             </map>
-        </property>
+        </constructor-arg>
         <property name="jahiaOAuthCacheService" ref="jahiaOAuthCacheServiceImpl"/>
     </bean>
 

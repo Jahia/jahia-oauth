@@ -45,7 +45,10 @@ package org.jahia.modules.jahiaoauth.impl;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.BaseApi;
-import com.github.scribejava.core.model.*;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
+import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaoauth.service.*;
@@ -69,8 +72,21 @@ import java.util.*;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
 
-    private Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap;
+    private final Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap;
     private JahiaOAuthCacheService jahiaOAuthCacheService;
+
+    public JahiaOAuthServiceImpl() {
+        this.oAuthBase20ApiMap = new HashMap<>();
+    }
+
+    public JahiaOAuthServiceImpl(Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap) {
+        this();
+        if (oAuthBase20ApiMap != null && !oAuthBase20ApiMap.isEmpty()) {
+            for (Map.Entry<String, BaseApi<? extends OAuth20Service>> entry : oAuthBase20ApiMap.entrySet()) {
+                addOAuth20Service(entry.getKey(), entry.getValue());
+            }
+        }
+    }
 
     @Override
     public String getAuthorizationUrl(JCRNodeWrapper jahiaOAuthNode, String connectorServiceName, String sessionId) throws RepositoryException {
@@ -330,8 +346,31 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
-    public void setoAuthBase20ApiMap(Map<String, BaseApi<? extends OAuth20Service>> oAuthBase20ApiMap) {
-        this.oAuthBase20ApiMap = oAuthBase20ApiMap;
+    public void addOAuth20Service(String key, BaseApi<? extends OAuth20Service> oAuth20Service) {
+        oAuthBase20ApiMap.put(key, oAuth20Service);
+    }
+
+    @Override
+    public void removeOAuth20Service(String key) {
+        if (oAuthBase20ApiMap.containsKey(key)) {
+            oAuthBase20ApiMap.remove(key);
+        }
+    }
+
+    @Override
+    public void removeOAuth20Service(BaseApi<? extends OAuth20Service> oAuth20Service) {
+        String key = null;
+        Iterator<Map.Entry<String, BaseApi<? extends OAuth20Service>>> it = oAuthBase20ApiMap.entrySet().iterator();
+        Map.Entry<String, BaseApi<? extends OAuth20Service>> entry;
+        while (key == null && it.hasNext()) {
+            entry = it.next();
+            if (entry.getValue().equals(oAuth20Service)) {
+                key = entry.getKey();
+            }
+        }
+        if (key != null) {
+            oAuthBase20ApiMap.remove(key);
+        }
     }
 
     public void setJahiaOAuthCacheService(JahiaOAuthCacheService jahiaOAuthCacheService) {
