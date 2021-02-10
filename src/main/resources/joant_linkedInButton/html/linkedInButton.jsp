@@ -21,7 +21,6 @@
     <c:set var="cssClass" value="${currentNode.properties['cssClass'].string}"/>
     <c:set var="htmlId" value="${currentNode.properties['htmlId'].string}"/>
     <c:set var="tagType" value="${currentNode.properties['tagType'].string}"/>
-    <c:url var="logoUrl" value="${url.currentModule}/images/linkedIn_logo.png"/>
     <template:addResources type="css" resources="button.css"/>
 
     <template:addResources>
