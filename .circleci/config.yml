@@ -1,5 +1,32 @@
 version: 2.1
 
+orbs:
+  docker: circleci/docker@0.5.20
+
+# Parameters are available across the entire config file and can be used with this syntax: << pipeline.parameters.THE_PARAMETER >>
+# Avoid using project-specific variables in the jobs or steps.
+# Instead, declare those as pipeline parameters (At the top of the config file).
+# This eases portability of the config file across different modules
+parameters:
+  GITHUB_SLUG:
+    type: string
+    default: "jahia/jahia-oauth"
+  MODULE_ID:
+    type: string
+    default: "jahia-oauth"
+  PRIMARY_RELEASE_BRANCH:
+    type: string
+    default: "master"
+  RELEASE_ID:
+    type: string
+    default: ""
+  RELEASE_VERSION:
+    type: string
+    default: ""
+  IS_RELEASE:
+    type: boolean
+    default: false
+
 references:
   workdir: &workdir
     working_directory: ~/source
@@ -15,48 +42,46 @@ references:
       at: .
 
 jobs:
+  # This job is there to prepare the repo for the next steps
+  initialize:
+    <<: *workdir
+    docker:
+      - image: cimg/node:14.15
+    steps:
+      - checkout
+      - *persist-workspace
+
   checkout:
     <<: *workdir
-    docker: # run the steps with Docker
+    docker:
       - image: circleci/openjdk:8-jdk-stretch
     steps:
       - checkout
       - *persist-workspace
 
+  # Build the module and save it locally
+  # We're saving the artifacts that are then used later on to execute the tests
+  # The artifacts are also stored and made available through circleci UI if further investigations are necessary
   build:
-    parameters:
-      is_pull_request:
-        type: boolean
-        default: false
     <<: *workdir
-    docker: # run the steps with Docker
-      - image: circleci/openjdk:8-jdk-stretch
-    resource_class: large
+    docker:
+      - image: cimg/openjdk:8.0.275
     steps:
       - *attach-workspace
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
-      - when:
-          condition: <<parameters.is_pull_request>>
-          steps:
-            - run:
-                name: mvn clean install
-                command: mvn -s .circleci/.circleci.settings.xml clean install
-      - unless:
-          condition: <<parameters.is_pull_request>>
-          steps:
-            - run:
-                name: mvn clean deploy
-                command: mvn -s .circleci/.circleci.settings.xml clean deploy
+            - v1-dependencies-{{ checksum "pom.xml" }}
+      - run: mvn -s .circleci/.circleci.settings.xml clean install
       - save_cache:
           paths:
             - ~/.m2
-          key: v2-dependencies-{{ checksum "pom.xml" }}
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      # Environment provisioning is sometimes dependent upon dependencies build during mvn clean install
+      # This step copies those dependencies and make them available for further actions,
+      # such as being used to provision a running Jahia with a set of freshly built artifacts
+      - run: mvn -s .circleci/.circleci.settings.xml dependency:copy-dependencies
       - run:
-          name: Copy artifacts
+          name: Prepare artifacts
           command: |
             mkdir /tmp/artifacts/
             cp /home/circleci/source/target/*.jar /tmp/artifacts/
@@ -64,101 +89,159 @@ jobs:
           path: /tmp/artifacts/
       - *persist-workspace
 
-  sonar:
-    parameters:
-      is_pull_request:
-        type: boolean
-        default: false
+  # This job publish the artifact to nexus by calling the deploy command
+  # It is only executed when merging into master (after successful PR execution)
+  publish:
     <<: *workdir
-    docker: # run the steps with Docker
-      - image: circleci/openjdk:8-jdk-stretch
-    resource_class: large
+    docker:
+      - image: cimg/openjdk:8.0.275
     steps:
       - *attach-workspace
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-{{ checksum "pom.xml" }}
             # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
-      - when:
-          condition: <<parameters.is_pull_request>>
-          steps:
-            - run:
-                name: Analyze pull request with sonar
-                command: |
-                  mvn -s .circleci/.circleci.settings.xml sonar:sonar -Dsonar.pullrequest.branch=$CIRCLE_BRANCH \
-                  -Dsonar.pullrequest.key=<< pipeline.parameters.pull_request_number >> \
-                  -Dsonar.pullrequest.base=<< pipeline.parameters.target_branch >> \
-                  -Dsonar.pullrequest.github.repository=<< pipeline.parameters.github_repository >>
-      - unless:
-          condition: <<parameters.is_pull_request>>
-          steps:
-            - run:
-                name: Sonar analysis
-                command: |
-                  if [[ "${CIRCLE_BRANCH}" == "master" ]];
-                  then
-                    mvn -s .circleci/.circleci.settings.xml sonar:sonar
-                  else
-                    mvn -s .circleci/.circleci.settings.xml sonar:sonar -Dsonar.branch.name=$CIRCLE_BRANCH
-                  fi
+            - v1-dependencies-
+      - run: mvn -s .circleci/.circleci.settings.xml clean install deploy
+
+  sonar:
+    <<: *workdir
+    docker: # run the steps with Docker
+      - image: circleci/openjdk:11-jdk-stretch
+    resource_class: medium
+    steps:
+      - *attach-workspace
+      - checkout
+      - restore_cache:
+          keys:
+            - sonar-dependencies-{{ checksum "pom.xml" }}
+            # Fallback if no exact match found
+            - sonar-dependencies-
+      # We're executing different actions depending fi the job was triggered by a PR or if it was triggered on branch
+      # If the branch was not triggered by a PR, the CIRCLE_PULL_REQUEST variable will be empty
+      - run:
+          name: Sonar Release branch analysis
+          environment:
+            DEPENDENCY_CHECK_SETTINGS: -DfailOnError=false -DskipProvidedScope=true -DskipTestScope=false -Dformats=HTML,JSON
+                -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json
+                -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+                -DretireJsAnalyzerEnabled=false -DnodeAnalyzerEnabled=false
+          command: |
+            if [[ ! -z "$CIRCLE_PULL_REQUEST" ]]; then
+              # echo "Git custom command to fix circle-ci checkout for sonar analysis"
+              git fetch --all
+              git branch -D << pipeline.parameters.PRIMARY_RELEASE_BRANCH >>
+              git rev-parse origin/<< pipeline.parameters.PRIMARY_RELEASE_BRANCH >>
+              echo "Executing a PR based analysis"
+              mvn -s .circleci/.circleci.settings.xml sonar:sonar \
+                  -Dsonar.projectKey=<< pipeline.parameters.MODULE_ID >> \
+                  -Dsonar.pullrequest.branch=$CIRCLE_BRANCH \
+                  -Dsonar.pullrequest.key=${CIRCLE_PULL_REQUEST##*/} \
+                  -Dsonar.pullrequest.base=<< pipeline.parameters.PRIMARY_RELEASE_BRANCH >> \
+                  -Dsonar.pullrequest.github.repository=<< pipeline.parameters.GITHUB_SLUG >>
+            elif [[ "$CIRCLE_BRANCH" == << pipeline.parameters.PRIMARY_RELEASE_BRANCH >> ]]; then
+              echo "Executing an analysis on the main branch"
+              mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+                  -Dsonar.projectKey=<< pipeline.parameters.MODULE_ID >> $DEPENDENCY_CHECK_SETTINGS
+            else
+              echo "Executing an analysis on branch: $CIRCLE_BRANCH"
+              mvn -s .circleci/.circleci.settings.xml dependency-check:aggregate sonar:sonar \
+                  -Dsonar.branch.name=$CIRCLE_BRANCH $DEPENDENCY_CHECK_SETTINGS
+            fi
       - save_cache:
           paths:
             - ~/.m2
-          key: v2-dependencies-{{ checksum "pom.xml" }}
+          key: sonar-dependencies-{{ checksum "pom.xml" }}
 
-# Pipeline parameter must be declared
-parameters:
-  run_pull_request:
-    type: boolean
-    default: false
-  target_branch:
-    type: string
-    default: ""
-  pull_request_number:
-    type: string
-    default: ""
-  github_repository:
-    type: string
-    default: ""
+  release:
+    <<: *workdir
+    docker: # run the steps with Docker
+      - image: cimg/openjdk:8.0.275-node
+    resource_class: xlarge
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "b1:b5:b6:f4:e9:d0:b5:df:d6:94:75:79:01:65:69:88"
+      - run:
+          name: Delete github tag <<pipeline.parameters.RELEASE_VERSION>>
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            git config user.email "jahia-ci@jahia.com"
+            git config user.name "Jahia CI"
+            git tag --delete <<pipeline.parameters.RELEASE_VERSION>>
+            git push --delete origin <<pipeline.parameters.RELEASE_VERSION>>
+      - run:
+          name: Release prepare version for <<pipeline.parameters.RELEASE_VERSION>>
+          command: |
+            FINAL_RELEASE_VERSION=$(echo <<pipeline.parameters.RELEASE_VERSION>> | cut -d'-' -f 1)
+            MAJOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f1`
+            MINOR_VERSION=`echo $FINAL_RELEASE_VERSION | cut -d. -f2`
+            REVISION=`echo $FINAL_RELEASE_VERSION | cut -d. -f3`
+
+            if [[ "<<pipeline.parameters.PRIMARY_RELEASE_BRANCH>>" == "master"  || "<<pipeline.parameters.PRIMARY_RELEASE_BRANCH>>" == "main"  ||  "<<pipeline.parameters.PRIMARY_RELEASE_BRANCH>>" =~ ^[0-9]_x$ ]]; then
+             NEXT_MINOR_VERSION=`expr $MINOR_VERSION + 1`
+             NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$NEXT_MINOR_VERSION.0"-SNAPSHOT
+            else
+              NEXT_REVISION=`expr $REVISION + 1`
+              NEXT_DEVELOPMENT_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$NEXT_REVISION"-SNAPSHOT
+            fi
+
+            mvn -s .circleci/.circleci.settings.xml -B -Dtag=$FINAL_RELEASE_VERSION release:prepare -DreleaseVersion=$FINAL_RELEASE_VERSION -DdevelopmentVersion="$NEXT_DEVELOPMENT_VERSION"
+      - run:
+          name: Update github release for id << pipeline.parameters.RELEASE_ID >>
+          command: |
+            curl -X PATCH \
+            -H "Accept:application/vnd.github.v3+json" \
+            -d "{\"tag_name\":\"<<pipeline.parameters.RELEASE_VERSION>>\", \"prerelease\": false, \"draft\": false}" -u \
+            jahia-ci:$GITHUB_API_TOKEN https://api.github.com/repos/<<pipeline.parameters.GITHUB_SLUG>>/releases/<< pipeline.parameters.RELEASE_ID >>
+      - run:
+          name: Perform release
+          command: |
+            mvn -s .circleci/.circleci.settings.xml release:perform -Prelease-to-staging-repository -DscmCommentPrefix="[skip ci] [maven-release-plugin]"
+      - run:
+          name: Copy artifacts
+          command: |
+            mkdir /tmp/artifacts/
+            cp /home/circleci/source/target/*.jar /tmp/artifacts/
+      - store_artifacts:
+          path: /tmp/artifacts/
 
 workflows:
   version: 2
-  # This one is run only when triggered with the API, using a GitHub action
-  pull_request:
-    when: << pipeline.parameters.run_pull_request >>
-    jobs:
-      - checkout:
-          name: PR Checkout
-      - build:
-          name: PR Build
-          is_pull_request: true
-          context: QA_ENVIRONMENT
-          requires:
-            - PR Checkout
-      - sonar:
-          name: PR Sonar analysis
-          is_pull_request: true
-          context: QA_ENVIRONMENT
-          requires:
-            - PR Build
+  # On code change is executed each time new code is pushed to a branch
+  # Current project configuration in circleci only builds on PR + main, so effectively this is only being executed
   on-code-change:
+    unless: << pipeline.parameters.IS_RELEASE >>
     jobs:
-      - checkout:
-          filters:
-            branches:
-              only:
-                - master
-                - /feature-.*/
-                - /[0-9]_[0-9]_x/
+      - initialize
       - build:
-          is_pull_request: false
           context: QA_ENVIRONMENT
           requires:
-            - checkout
+            - initialize
       - sonar:
-          name: Sonar analysis
-          is_pull_request: false
           context: QA_ENVIRONMENT
           requires:
             - build
+      - publish:
+          context: QA_ENVIRONMENT
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - << pipeline.parameters.PRIMARY_RELEASE_BRANCH >>
+
+  # The on-release workflow was created to handle the full release lifecycle after creating a release using GitHub
+  # https://github.com/Jahia/sandbox/releases
+  # The release is first created using the "pre-release" tag and a pipeline is triggered from a GitHub action
+  # This pipeline perform the following action:
+  # - Delete the tag created by GitHub (unnecessary)
+  # - Run mvn release:prepare
+  # - Run mvn release:perform
+  on-release:
+    when: << pipeline.parameters.IS_RELEASE >>
+    jobs:
+      - release:
+          context: QA_ENVIRONMENT
