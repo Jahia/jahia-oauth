@@ -1,25 +1,17 @@
 /*
- * ==========================================================================================
- * =                            JAHIA'S ENTERPRISE DISTRIBUTION                             =
- * ==========================================================================================
+ * Copyright (C) 2002-2021 Jahia Solutions Group SA. All rights reserved.
  *
- *                                  http://www.jahia.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * JAHIA'S ENTERPRISE DISTRIBUTIONS LICENSING - IMPORTANT INFORMATION
- * ==========================================================================================
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *     Copyright (C) 2002-2020 Jahia Solutions Group. All rights reserved.
- *
- *     This file is part of a Jahia's Enterprise Distribution.
- *
- *     Jahia's Enterprise Distributions must be used in accordance with the terms
- *     contained in the Jahia Solutions Group Terms & Conditions as well as
- *     the Jahia Sustainable Enterprise License (JSEL).
- *
- *     For questions regarding licensing, support, production usage...
- *     please contact our team at sales@jahia.com or go to http://www.jahia.com/license.
- *
- * ==========================================================================================
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.jahia.modules.jahiaoauth.impl;
 
@@ -130,8 +122,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     // Store in a simple map the results by properties as mapped in the connector
                     propertiesResult.putAll(getPropertiesResult(connectorService, responseJson));
                 } catch (Exception e) {
-                    logger.error("Did not received expected json, response message was: {} and response body was: {}", response.getMessage(),
-                            response.getBody());
+                    logger.error("Did not received expected json, response message was: {} and response body was: {}",
+                            response.getMessage(), response.getBody());
                     throw e;
                 }
             } else {
@@ -198,7 +190,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty,
-                                               String propertyName) throws JSONException {
+            String propertyName) throws JSONException {
         if (StringUtils.startsWith(pathToProperty, "/")) {
 
             String key = StringUtils.substringAfter(pathToProperty, "/");
@@ -226,7 +218,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult,
-                               String siteKey) {
+            String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
         propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
@@ -235,7 +227,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty,
-                                              String propertyName) throws JSONException {
+            String propertyName) throws JSONException {
         int arrayIndex = Integer.parseInt(StringUtils.substringBetween(pathToProperty, "[", "]"));
         pathToProperty = StringUtils.substringAfter(pathToProperty, "]");
         if (StringUtils.isBlank(pathToProperty) && jsonArray.length() >= arrayIndex) {
