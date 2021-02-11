@@ -456,10 +456,10 @@
                     <property name="valueType" value="string"/>
                 </bean>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
-                    <property name="name" value="profilePicture(displayImage~:playableStreams)"/>
+                    <property name="name" value="pictureUrl"/>
                     <property name="valueType" value="string"/>
-                    <property name="propertyToRequest" value="profilePicture"/>
-                    <property name="valuePath" value="/displayImage~/elements[0]/identifiers[0]/identifier"/>
+                    <property name="propertyToRequest" value="profilePicture(displayImage~:playableStreams)"/>
+                    <property name="valuePath" value="/profilePicture/displayImage~/elements[0]/identifiers[0]/identifier"/>
                 </bean>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
                     <property name="name" value="emailAddress"/>

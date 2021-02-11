@@ -90,6 +90,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
+    @SuppressWarnings("java:S3776")
     public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
@@ -104,6 +105,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         Map<String, Object> propertiesResult = new HashMap<>();
 
         List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
+
         for (String url : urlsToProcess) {
             // Request all the properties available right now
             OAuthRequest request = new OAuthRequest(Verb.GET, url);
@@ -126,6 +128,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                             response.getMessage(), response.getBody());
                     throw e;
                 }
+            } else if (urlsToProcess.size() > 1 && response.getCode() == HttpServletResponse.SC_FORBIDDEN) {
+                // In case of multiple url, it is possible that not all available.
+                // Do nothing in that case - we check at the end if all properties are filled
             } else {
                 logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}",
                         response.getCode(), response.getMessage(), response.getBody());
@@ -141,6 +146,12 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             // Get Mappers
             for (MapperConfig mapperConfig : config.getMappers()) {
                 if (mapperConfig.isActive()) {
+                    // Check that all props are found
+                    mapperConfig.getMappings().forEach(mapping -> {
+                        if (!propertiesResult.containsKey(mapping.getConnectorProperty())) {
+                            logger.warn("Connector property {} mapped to jcr property {} was not found in the received properties, please check your configuration", mapping.getConnectorProperty(), mapping.getMappedProperty());
+                        }
+                    });
                     jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
                 }
             }
@@ -185,6 +196,13 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                 }
             } else {
                 propertiesResult.put(entry.getName(), responseJson.get(entry.getPropertyToRequest()));
+            }
+        } else {
+            final String keyFromPath = StringUtils.substringBetween(entry.getValuePath(), "/");
+            if (keyFromPath != null && responseJson.has(keyFromPath)) {
+                @SuppressWarnings("java:S1075")
+                String propertyPath = StringUtils.substringAfter(entry.getValuePath(), "/" + keyFromPath);
+                extractPropertyFromJSONObject(propertiesResult, responseJson.getJSONObject(keyFromPath), propertyPath, entry.getName());
             }
         }
     }
