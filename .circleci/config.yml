@@ -162,7 +162,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "b1:b5:b6:f4:e9:d0:b5:df:d6:94:75:79:01:65:69:88"
+            - "22:e4:8c:a7:59:83:37:65:5a:d6:a4:41:e9:10:37:95"
       - run:
           name: Delete github tag <<pipeline.parameters.RELEASE_VERSION>>
           command: |
