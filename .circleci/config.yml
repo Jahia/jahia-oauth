@@ -208,6 +208,148 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts/
 
+  generate-changelog:
+    <<: *workdir
+    docker: # run the steps with Docker
+      - image: cimg/node:14.15
+    resource_class: xlarge
+    steps:
+      - checkout
+      - *attach-workspace
+      - add_ssh_keys:
+          fingerprints:
+            - "8a:f3:d8:ff:9d:05:72:4f:a8:81:49:18:f8:5b:aa:51"
+      - run:
+          name: Setting up github configuration
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            git config user.email "jahia-ci@jahia.com"
+            git config user.name "Jahia CI"
+      - run:
+          name: Getting latest changes from the remote branch
+          command: |
+            git fetch --all
+            git pull origin $CIRCLE_BRANCH --quiet
+      - run:
+          name: Update Changelog
+          command: |
+            yarn
+            yarn add auto
+            GH_TOKEN=${GITHUB_API_TOKEN} yarn auto changelog
+            git push --set-upstream origin $CIRCLE_BRANCH
+      - *persist-workspace
+
+  update-signature:
+    <<: *workdir
+    docker:
+      - image: cimg/openjdk:8.0.275-node
+    resource_class: xlarge
+    parameters:
+      KEYMAKER_VERSION:
+        type: string
+        default: "2.0"
+      KEYMAKER_LOCATION:
+        type: string
+        default: "org/jahia/keymaker/keymaker-cli"
+      KEYMAKER_NAME:
+        type: string
+        default: "keymaker-cli"
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "8a:f3:d8:ff:9d:05:72:4f:a8:81:49:18:f8:5b:aa:51"
+      - run:
+          name: Setting up github configuration
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            git config user.email "jahia-ci@jahia.com"
+            git config user.name "Jahia CI"
+      - run:
+          name: Getting latest changes from the remote branch
+          command: |
+            echo "Handling if this job was re-ran"
+            git fetch --all
+            git pull origin $CIRCLE_BRANCH --quiet
+      - run:
+          name: Downloading keymaker artifacts
+          command: |
+            mkdir -p target/keymaker
+            url="${NEXUS_ENTERPRISE_RELEASES_URL}/content/<<parameters.KEYMAKER_LOCATION>>/<<parameters.KEYMAKER_VERSION>>/<<parameters.KEYMAKER_NAME>>-<<parameters.KEYMAKER_VERSION>>-jar-with-dependencies.jar"
+            curl --header "Authorization: Basic $(echo -n "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" | base64)" \
+                --url "${url}" \
+                --output "target/keymaker/<<parameters.KEYMAKER_NAME>>.jar"
+            KEYMAKER_CLI_JAR="$(pwd)/target/keymaker/<<parameters.KEYMAKER_NAME>>.jar"
+            echo "export KEYMAKER_CLI_JAR=${KEYMAKER_CLI_JAR}" >> $BASH_ENV
+            . $BASH_ENV
+      - run:
+          name: Handling signature update for single or multiple submodules
+          command: |
+            root_dir=$(pwd)
+            packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+            if [[ ${packaging_type} == "pom" ]]; then
+              project_modules=($(mvn -q --also-make exec:exec -Dexec.executable="pwd"))
+              for module in ${project_modules[@]:1}; do
+                if [[ ${module} != ${root_dir} ]]; then
+                  cd $module
+                  group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
+                  parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
+                  project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+                  packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs | xargs)
+                  if [[ ${packaging_type} == "bundle" ]]; then
+                    KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
+                    if [[ ${group_id} == "org.jahia.modules" || ${parent_group_id} == "org.jahia.modules" ]]; then
+                      if [[ $(echo $KEYMAKER_CLI_OUTPUT | grep -w "Signature valid" | wc -l) != "1" ]]; then
+                        sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                        sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                        git add pom.xml && git commit -m "[ci skip] Update signature for ${project_name}"
+                        git push -u origin ${CIRCLE_BRANCH}
+                      else
+                        echo "Signature is up-to-date."
+                      fi
+                    else
+                      echo "This project is not a Jahia module."
+                    fi
+                  else
+                    echo "Ignoring project ${project_name} b/c it's a ${packaging_type} packaging type"
+                  fi
+                  cd -
+                fi
+              done
+            else
+              echo "There are no submodules in this project"
+            fi
+      - run:
+          name: Handling signature for a single module
+          command: |
+            packaging_type=$(mvn help:evaluate -Dexpression=project.packaging -q -DforceStdout | xargs)
+            echo "Packing type: ${packaging_type}"
+            if [[ ${packaging_type} == "bundle" ]]; then
+              group_id=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout | xargs)
+              parent_group_id=$(mvn help:evaluate -Dexpression=project.parent.groupId -q -DforceStdout | xargs)
+              project_name=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout | xargs)
+              if [[ ${group_id} != "org.jahia.modules" && ${parent_group_id} != "org.jahia.modules" ]]; then
+                echo "Project is not a Jahia modules"
+                circleci-agent step halt
+              else
+                KEYMAKER_CLI_OUTPUT=`java -jar ${KEYMAKER_CLI_JAR} pom -f pom.xml -s`
+                if [[ $(echo $KEYMAKER_CLI_OUTPUT | grep -w "Signature valid" | wc -l) == "1" ]]; then
+                  echo "Signature is already up-to-date"
+                  circleci-agent step halt
+                else
+                  echo "New signature: ${KEYMAKER_CLI_OUTPUT}"
+                  sed -i -e "s%<\(.*\)Jahia-Signature>.*</%<\1Jahia-Signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                  sed -i -e "s%<\(.*\)jahia-module-signature>.*</%<\1jahia-module-signature>${KEYMAKER_CLI_OUTPUT}</%" pom.xml
+                  git add pom.xml && git commit -m "[ci skip] Updated signature for ${project_name}"
+                  git push -u origin ${CIRCLE_BRANCH}
+                fi
+              fi
+            else
+              echo "There are submodule(s) in this projects"
+            fi
+
 workflows:
   version: 2
   # On code change is executed each time new code is pushed to a branch
@@ -243,5 +385,14 @@ workflows:
   on-release:
     when: << pipeline.parameters.IS_RELEASE >>
     jobs:
+      - initialize
+      - generate-changelog:
+          context: QA_ENVIRONMENT
+          requires:
+            - initialize
       - release:
           context: QA_ENVIRONMENT
+      - update-signature:
+          context: QA_ENVIRONMENT
+          requires:
+            - release
