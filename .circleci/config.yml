@@ -397,6 +397,8 @@ workflows:
             - initialize
       - release:
           context: QA_ENVIRONMENT
+          requires:
+            - generate-changelog
       - update-signature:
           context: QA_ENVIRONMENT
           requires:
