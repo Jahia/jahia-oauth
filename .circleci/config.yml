@@ -164,6 +164,11 @@ jobs:
           fingerprints:
             - "22:e4:8c:a7:59:83:37:65:5a:d6:a4:41:e9:10:37:95"
       - run:
+          name: Getting latest changes from the remote branch
+          command: |
+            git fetch --all
+            git pull origin $CIRCLE_BRANCH --quiet
+      - run:
           name: Delete github tag <<pipeline.parameters.RELEASE_VERSION>>
           command: |
             mkdir -p ~/.ssh
