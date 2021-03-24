@@ -54,7 +54,7 @@
 
     <artifactId>jahia-oauth</artifactId>
     <name>Jahia OAuth</name>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>bundle</packaging>
     <description>This is the custom module (Jahia OAuth) for running on a Digital Experience Manager server.</description>
 
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:Jahia/jahia-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/jahia-oauth.git</developerConnection>
         <url>https://github.com/Jahia/jahia-oauth</url>
-        <tag>1_x</tag>
+        <tag>1.3.0</tag>
     </scm>
 
     <properties>
