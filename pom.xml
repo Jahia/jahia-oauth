@@ -54,7 +54,7 @@
 
     <artifactId>jahia-oauth</artifactId>
     <name>Jahia OAuth</name>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <description>This is the custom module (Jahia OAuth) for running on a Digital Experience Manager server.</description>
 
@@ -68,6 +68,7 @@
     <properties>
         <export-package>org.jahia.modules.jahiaoauth.service,org.jahia.modules.jahiaoauth.decorator,com.github.scribejava.*</export-package>
         <jahia-static-resources>/css,/javascript,/icons</jahia-static-resources>
+        <jahia.nexus.staging.repository.id>24fe7e361ff8560</jahia.nexus.staging.repository.id>
     </properties>
 
     <distributionManagement>
