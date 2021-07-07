@@ -33,9 +33,11 @@
                 <entry key="KaixinApi20">
                     <bean class="com.github.scribejava.apis.KaixinApi20"/>
                 </entry>
-                <!--<entry key="SalesforceApi">-->
-                <!--<bean class="com.github.scribejava.apis.SalesforceApi"/>-->
-                <!--</entry>-->
+                <entry key="SalesforceApi">
+                    <bean class="com.github.scribejava.apis.SalesforceApi">
+                        <argument value="${jahia.oauth.api.salesforce.hostname:test.salesforce.com}"/>
+                    </bean>
+                </entry>
                 <entry key="ViadeoApi">
                     <bean class="com.github.scribejava.apis.ViadeoApi"/>
                 </entry>
