@@ -34,6 +34,7 @@ public class JahiaOAuthConstants {
     public static final String TOKEN_SCOPE = "tokenScope";
     public static final String TOKEN_TYPE = "tokenType";
     public static final String AUTHORIZATION_URL = "authorizationUrl";
+    public static final String OPEN_ID_TOKEN = "OpenIdToken";
 
     private JahiaOAuthConstants() {
     }

@@ -15,6 +15,7 @@
  */
 package org.jahia.modules.jahiaoauth.impl;
 
+import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -168,7 +169,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         tokenData.put(JahiaOAuthConstants.REFRESH_TOKEN, accessToken.getRefreshToken());
         tokenData.put(JahiaOAuthConstants.TOKEN_SCOPE, accessToken.getScope());
         tokenData.put(JahiaOAuthConstants.TOKEN_TYPE, accessToken.getTokenType());
-
+        if (accessToken instanceof OpenIdOAuth2AccessToken){
+            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken)accessToken).getOpenIdToken());
+        }
         return tokenData;
     }
 
