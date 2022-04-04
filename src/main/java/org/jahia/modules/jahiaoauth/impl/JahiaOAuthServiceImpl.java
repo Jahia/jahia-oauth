@@ -156,6 +156,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
                 }
             }
+
+            // Get Post Executions
+            jahiaAuthMapperService.executeConnectorResultProcessors(config, propertiesResult);
         } catch (Exception e) {
             throw new JahiaOAuthException("Something when wrong in OAuth with config " + config.getConnectorName(), e);
         }
