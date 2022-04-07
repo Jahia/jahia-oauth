@@ -30,21 +30,32 @@ import org.jahia.modules.jahiaauth.service.ConnectorService;
 import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
 import org.jahia.modules.jahiaauth.service.JahiaAuthMapperService;
 import org.jahia.modules.jahiaauth.service.MapperConfig;
+import org.jahia.modules.jahiaauth.service.SettingsService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthException;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.jahia.osgi.BundleUtils;
+import org.jahia.osgi.FrameworkService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author dgaillard
@@ -54,6 +65,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     private final Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaAuthMapperService jahiaAuthMapperService;
+    private ServiceTracker<Object, Object> serviceTracker;
+    private ConfigurationAdmin configurationAdmin;
+    private SettingsService settingsService;
 
     public JahiaOAuthServiceImpl() {
         this.oAuthDefaultApi20Map = new HashMap<>();
@@ -63,6 +77,71 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         this();
         if (oAuthDefaultApi20Map != null && !oAuthDefaultApi20Map.isEmpty()) {
             oAuthDefaultApi20Map.forEach(this::addOAuthDefaultApi20);
+        }
+    }
+
+    public void setSettingsService(SettingsService settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public void setConfigurationAdmin(ConfigurationAdmin configurationAdmin) {
+        this.configurationAdmin = configurationAdmin;
+    }
+
+    public void init() {
+        BundleContext bundleContext = FrameworkService.getBundleContext();
+        //Allows to configure connector without having to go on the settings UI
+        serviceTracker = new ServiceTracker<>(bundleContext, "org.jahia.modules.jahiaoauth.service.OAuthConnectorService",
+                new ServiceTrackerCustomizer<Object, Object>() {
+                    @Override
+                    public OAuthConnectorService addingService(ServiceReference serviceReference) {
+                        OAuthConnectorService oAuthConnectorService = (OAuthConnectorService) bundleContext.getService(serviceReference);
+                        loadConnector(oAuthConnectorService,
+                                serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString());
+
+                        return oAuthConnectorService;
+                    }
+
+                    @Override
+                    public void modifiedService(ServiceReference serviceReference, Object o) {
+                        OAuthConnectorService oAuthConnectorService = (OAuthConnectorService) bundleContext.getService(serviceReference);
+                        loadConnector(oAuthConnectorService,
+                                serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString());
+                    }
+
+                    @Override
+                    public void removedService(ServiceReference serviceReference, Object o) {
+                    }
+                });
+        serviceTracker.open();
+    }
+
+    public void destroy() {
+        serviceTracker.close();
+    }
+
+    public void loadConnector(OAuthConnectorService oAuthConnectorService, String connectorName) {
+        Configuration[] configurations = null;
+        try {
+            configurations = configurationAdmin.listConfigurations("(service.factoryPid=org.jahia.modules.auth)");
+        } catch (IOException e) {
+            logger.error("IOException reading org.jahia.modules.auth configs", e);
+        } catch (InvalidSyntaxException e) {
+            logger.error("InvalidSyntaxException reading org.jahia.modules.auth configs", e);
+        }
+
+        if (configurations != null) {
+            Stream.of(configurations).forEach(configuration -> {
+                try {
+                    ConnectorConfig connectorConfig = settingsService
+                            .getConnectorConfig((String) configuration.getProperties().get("siteKey"), connectorName);
+                    if (connectorConfig != null) {
+                        oAuthConnectorService.validateSettings(connectorConfig);
+                    }
+                } catch (IOException e) {
+                    logger.error("Fail to validate settings", e);
+                }
+            });
         }
     }
 
@@ -150,7 +229,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     // Check that all props are found
                     mapperConfig.getMappings().forEach(mapping -> {
                         if (!propertiesResult.containsKey(mapping.getConnectorProperty())) {
-                            logger.warn("Connector property {} mapped to jcr property {} was not found in the received properties, please check your configuration", mapping.getConnectorProperty(), mapping.getMappedProperty());
+                            logger.warn(
+                                    "Connector property {} mapped to jcr property {} was not found in the received properties, please check your configuration",
+                                    mapping.getConnectorProperty(), mapping.getMappedProperty());
                         }
                     });
                     jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
@@ -172,8 +253,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         tokenData.put(JahiaOAuthConstants.REFRESH_TOKEN, accessToken.getRefreshToken());
         tokenData.put(JahiaOAuthConstants.TOKEN_SCOPE, accessToken.getScope());
         tokenData.put(JahiaOAuthConstants.TOKEN_TYPE, accessToken.getTokenType());
-        if (accessToken instanceof OpenIdOAuth2AccessToken){
-            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken)accessToken).getOpenIdToken());
+        if (accessToken instanceof OpenIdOAuth2AccessToken) {
+            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken());
         }
         return tokenData;
     }
@@ -206,8 +287,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         } else {
             final String keyFromPath = StringUtils.substringBetween(entry.getValuePath(), "/");
             if (keyFromPath != null && responseJson.has(keyFromPath)) {
-                @SuppressWarnings("java:S1075")
-                String propertyPath = StringUtils.substringAfter(entry.getValuePath(), "/" + keyFromPath);
+                @SuppressWarnings("java:S1075") String propertyPath = StringUtils.substringAfter(entry.getValuePath(), "/" + keyFromPath);
                 extractPropertyFromJSONObject(propertiesResult, responseJson.getJSONObject(keyFromPath), propertyPath, entry.getName());
             }
         }

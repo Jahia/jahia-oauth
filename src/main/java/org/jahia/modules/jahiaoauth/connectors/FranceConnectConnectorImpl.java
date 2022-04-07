@@ -33,5 +33,4 @@ public class FranceConnectConnectorImpl extends Connector implements OAuthConnec
     public void setMapProtectedResourceUrl(Map<String, String> mapProtectedResourceUrl) {
         this.mapProtectedResourceUrl = mapProtectedResourceUrl;
     }
-
 }
