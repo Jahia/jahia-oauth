@@ -6,7 +6,6 @@
     <reference id="jahiaAuthMapperService" interface="org.jahia.modules.jahiaauth.service.JahiaAuthMapperService" availability="mandatory"/>
 
     <reference id="settingsService" interface="org.jahia.modules.jahiaauth.service.SettingsService" availability="mandatory"/>
-    <reference id="configurationAdmin" interface="org.osgi.service.cm.ConfigurationAdmin"/>
     <reference id="settingsBean" interface="org.jahia.api.settings.SettingsBean"/>
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
@@ -103,7 +102,6 @@
         </argument>
         <property name="jahiaAuthMapperService" ref="jahiaAuthMapperService"/>
         <property name="settingsService" ref="settingsService"/>
-        <property name="configurationAdmin" ref="configurationAdmin"/>
     </bean>
 
     <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"

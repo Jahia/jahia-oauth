@@ -41,21 +41,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * @author dgaillard
@@ -66,7 +61,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private final Map<String, DefaultApi20> oAuthDefaultApi20Map;
     private JahiaAuthMapperService jahiaAuthMapperService;
     private ServiceTracker<Object, Object> serviceTracker;
-    private ConfigurationAdmin configurationAdmin;
     private SettingsService settingsService;
 
     public JahiaOAuthServiceImpl() {
@@ -84,10 +78,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         this.settingsService = settingsService;
     }
 
-    public void setConfigurationAdmin(ConfigurationAdmin configurationAdmin) {
-        this.configurationAdmin = configurationAdmin;
-    }
-
     public void init() {
         BundleContext bundleContext = FrameworkService.getBundleContext();
         //Allows to configure connector without having to go on the settings UI
@@ -96,17 +86,19 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     @Override
                     public OAuthConnectorService addingService(ServiceReference serviceReference) {
                         OAuthConnectorService oAuthConnectorService = (OAuthConnectorService) bundleContext.getService(serviceReference);
-                        loadConnector(oAuthConnectorService,
-                                serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString());
-
+                        String connectorName = serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString();
+                        logger.info("{} has been added, the configuration for the connector will be loaded if it's present", connectorName);
+                        settingsService.loadWithExistingConfiguration(oAuthConnectorService, connectorName);
                         return oAuthConnectorService;
                     }
 
                     @Override
                     public void modifiedService(ServiceReference serviceReference, Object o) {
                         OAuthConnectorService oAuthConnectorService = (OAuthConnectorService) bundleContext.getService(serviceReference);
-                        loadConnector(oAuthConnectorService,
-                                serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString());
+                        String connectorName = serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString();
+                        logger.info("{} has been modified, the configuration for the connector will be loaded if it's present",
+                                connectorName);
+                        settingsService.loadWithExistingConfiguration(oAuthConnectorService, connectorName);
                     }
 
                     @Override
@@ -118,31 +110,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     public void destroy() {
         serviceTracker.close();
-    }
-
-    public void loadConnector(OAuthConnectorService oAuthConnectorService, String connectorName) {
-        Configuration[] configurations = null;
-        try {
-            configurations = configurationAdmin.listConfigurations("(service.factoryPid=org.jahia.modules.auth)");
-        } catch (IOException e) {
-            logger.error("IOException reading org.jahia.modules.auth configs", e);
-        } catch (InvalidSyntaxException e) {
-            logger.error("InvalidSyntaxException reading org.jahia.modules.auth configs", e);
-        }
-
-        if (configurations != null) {
-            Stream.of(configurations).forEach(configuration -> {
-                try {
-                    ConnectorConfig connectorConfig = settingsService
-                            .getConnectorConfig((String) configuration.getProperties().get("siteKey"), connectorName);
-                    if (connectorConfig != null) {
-                        oAuthConnectorService.validateSettings(connectorConfig);
-                    }
-                } catch (IOException e) {
-                    logger.error("Fail to validate settings", e);
-                }
-            });
-        }
     }
 
     @Override
