@@ -49,9 +49,9 @@ public interface JahiaOAuthService {
     /**
      * This method will extract the token and execute the mappers action
      *
-     * @param config The oauth config for the connector
-     * @param token  String token send by the OAuth API
-     * @param state  String state send back by OAuth API in this context it's the user session ID
+     * @param config  The oauth config for the connector
+     * @param token   String token send by the OAuth API
+     * @param state   String state send back by OAuth API in this context it's the user session ID
      * @throws Exception
      */
     void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
@@ -84,7 +84,7 @@ public interface JahiaOAuthService {
     void addOAuthDefaultApi20(String key, DefaultApi20 oAuthDefaultApi20);
 
     /**
-     * This method will unregister a scribe Api 2.0 by its key
+     * This method will unregister a scribe Api 2.0 by its key for each site
      *
      * @param key api key
      */

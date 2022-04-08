@@ -55,8 +55,8 @@ public class OAuthCallback extends Action {
             if (StringUtils.isBlank(token) || StringUtils.isBlank(state)) {
                 return ActionResult.BAD_REQUEST;
             }
-
-            ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
+            String siteKey = renderContext.getSite().getSiteKey();
+            ConnectorConfig oauthConfig = settingsService.getConnectorConfig(siteKey, connectorName);
             try {
                 jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, state);
                 isAuthenticate = true;

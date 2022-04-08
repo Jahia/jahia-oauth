@@ -37,6 +37,7 @@ import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.jahia.osgi.BundleUtils;
 import org.jahia.osgi.FrameworkService;
+import org.jahia.services.sites.JahiaSitesService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,7 +71,11 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     public JahiaOAuthServiceImpl(Map<String, DefaultApi20> oAuthDefaultApi20Map) {
         this();
         if (oAuthDefaultApi20Map != null && !oAuthDefaultApi20Map.isEmpty()) {
-            oAuthDefaultApi20Map.forEach(this::addOAuthDefaultApi20);
+            oAuthDefaultApi20Map.forEach((key, value) -> JahiaSitesService.getInstance().getSitesNames().forEach(siteName -> {
+                if (!siteName.equals("systemsite")) {
+                    addOAuthDefaultApi20(key + "_" + siteName, value);
+                }
+            }));
         }
     }
 
@@ -85,10 +90,11 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                 new ServiceTrackerCustomizer<Object, Object>() {
                     @Override
                     public OAuthConnectorService addingService(ServiceReference serviceReference) {
+
                         OAuthConnectorService oAuthConnectorService = (OAuthConnectorService) bundleContext.getService(serviceReference);
                         String connectorName = serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString();
                         logger.info("{} has been added, the configuration for the connector will be loaded if it's present", connectorName);
-                        settingsService.loadWithExistingConfiguration(oAuthConnectorService, connectorName);
+                        settingsService.connectorServiceUpdated(oAuthConnectorService, connectorName);
                         return oAuthConnectorService;
                     }
 
@@ -98,11 +104,12 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                         String connectorName = serviceReference.getProperty(JahiaAuthConstants.CONNECTOR_SERVICE_NAME).toString();
                         logger.info("{} has been modified, the configuration for the connector will be loaded if it's present",
                                 connectorName);
-                        settingsService.loadWithExistingConfiguration(oAuthConnectorService, connectorName);
+                        settingsService.connectorServiceUpdated(oAuthConnectorService, connectorName);
                     }
 
                     @Override
                     public void removedService(ServiceReference serviceReference, Object o) {
+                        // Nothing to do
                     }
                 });
         serviceTracker.open();
@@ -321,8 +328,10 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         if (StringUtils.isNotBlank(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE))) {
             serviceBuilder.withScope(config.getProperty(JahiaOAuthConstants.PROPERTY_SCOPE));
         }
-        return serviceBuilder.build(oAuthDefaultApi20Map
-                .get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName()));
+
+        return serviceBuilder.build(oAuthDefaultApi20Map.get(config.getProperty("oauthApiName") != null ?
+                config.getProperty("oauthApiName") :
+                config.getConnectorName() + "_" + config.getSiteKey()));
     }
 
     @Override
@@ -332,9 +341,15 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Override
     public void removeOAuthDefaultApi20(String key) {
-        if (oAuthDefaultApi20Map.containsKey(key)) {
-            oAuthDefaultApi20Map.remove(key);
-        } else {
+        boolean connectorNotFound = true;
+        for (String siteName : JahiaSitesService.getInstance().getSitesNames()) {
+            String connectorBySite = key + "_" + siteName;
+            if (oAuthDefaultApi20Map.containsKey(connectorBySite)) {
+                oAuthDefaultApi20Map.remove(connectorBySite);
+                connectorNotFound = false;
+            }
+        }
+        if (connectorNotFound) {
             logger.warn("OAuthDefaultApi20 {} not found", key);
         }
     }
