@@ -11,97 +11,191 @@
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
     <reference id="authPipeline" interface="org.jahia.pipelines.Pipeline" filter="(type=authentication)"/>
 
-    <bean id="jahiaOAuthServiceImpl" class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthServiceImpl" init-method="init"
-          destroy-method="destroy">
+    <bean id="jahiaOAuthServiceImpl" class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthServiceImpl">
         <argument>
             <map>
                 <entry key="LinkedInApi20">
-                    <bean class="com.github.scribejava.apis.LinkedInApi20"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.LinkedInApi20"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="VkontakteApi">
-                    <bean class="com.github.scribejava.apis.VkontakteApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.VkontakteApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="HHApi">
-                    <bean class="com.github.scribejava.apis.HHApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.HHApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="GitHubApi">
-                    <bean class="com.github.scribejava.apis.GitHubApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.GitHubApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="MailruApi">
-                    <bean class="com.github.scribejava.apis.MailruApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.MailruApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="GeniusApi">
-                    <bean class="com.github.scribejava.apis.GeniusApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.GeniusApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="Foursquare2Api">
-                    <bean class="com.github.scribejava.apis.Foursquare2Api"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.Foursquare2Api"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="RenrenApi">
-                    <bean class="com.github.scribejava.apis.RenrenApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.RenrenApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="KaixinApi20">
-                    <bean class="com.github.scribejava.apis.KaixinApi20"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.KaixinApi20"/>
+                        </property>
+                    </bean>
                 </entry>
                 <!--<entry key="SalesforceApi">-->
                 <!--<bean class="com.github.scribejava.apis.SalesforceApi"/>-->
                 <!--</entry>-->
                 <entry key="ViadeoApi">
-                    <bean class="com.github.scribejava.apis.ViadeoApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.ViadeoApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="GoogleApi20">
-                    <bean class="com.github.scribejava.apis.GoogleApi20"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.GoogleApi20"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="PinterestApi">
-                    <bean class="com.github.scribejava.apis.PinterestApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.PinterestApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="SinaWeiboApi20">
-                    <bean class="com.github.scribejava.apis.SinaWeiboApi20"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.SinaWeiboApi20"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="OdnoklassnikiApi">
-                    <bean class="com.github.scribejava.apis.OdnoklassnikiApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.OdnoklassnikiApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="FacebookApi">
-                    <bean class="com.github.scribejava.apis.FacebookApi">
-                        <argument value="7.0"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.FacebookApi">
+                                <argument value="7.0"/>
+                            </bean>
+                        </property>
                     </bean>
                 </entry>
                 <entry key="TutByApi">
-                    <bean class="com.github.scribejava.apis.TutByApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.TutByApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="LiveApi">
-                    <bean class="com.github.scribejava.apis.LiveApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.LiveApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="DoktornaraboteApi">
-                    <bean class="com.github.scribejava.apis.DoktornaraboteApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.DoktornaraboteApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="NaverApi">
-                    <bean class="com.github.scribejava.apis.NaverApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.NaverApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="MisfitApi">
-                    <bean class="com.github.scribejava.apis.MisfitApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.MisfitApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="StackExchangeApi">
-                    <bean class="com.github.scribejava.apis.StackExchangeApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.StackExchangeApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="ImgurApi">
-                    <bean class="com.github.scribejava.apis.ImgurApi"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="com.github.scribejava.apis.ImgurApi"/>
+                        </property>
+                    </bean>
                 </entry>
                 <entry key="FranceConnectApi">
-                    <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
-                        <property name="accessTokenEndpoint" value="https://app.franceconnect.gouv.fr/api/v1/token"/>
-                        <property name="authorizationBaseUrl" value="https://app.franceconnect.gouv.fr/api/v1/authorize"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
+                                <property name="accessTokenEndpoint" value="https://app.franceconnect.gouv.fr/api/v1/token"/>
+                                <property name="authorizationBaseUrl" value="https://app.franceconnect.gouv.fr/api/v1/authorize"/>
+                            </bean>
+                        </property>
                     </bean>
                 </entry>
                 <entry key="FranceConnectApiDev">
-                    <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
-                        <property name="accessTokenEndpoint" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/token"/>
-                        <property name="authorizationBaseUrl" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize"/>
+                    <bean class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthDefaultAPIBuilder">
+                        <property name="defaultApi20">
+                            <bean class="org.jahia.modules.scribejava.apis.FranceConnectApi">
+                                <property name="accessTokenEndpoint" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/token"/>
+                                <property name="authorizationBaseUrl" value="https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize"/>
+                            </bean>
+                        </property>
                     </bean>
                 </entry>
             </map>
         </argument>
         <property name="jahiaAuthMapperService" ref="jahiaAuthMapperService"/>
-        <property name="settingsService" ref="settingsService"/>
     </bean>
 
     <service id="JahiaOAuthServiceOsgi" ref="jahiaOAuthServiceImpl"

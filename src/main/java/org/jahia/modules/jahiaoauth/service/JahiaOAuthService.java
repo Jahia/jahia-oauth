@@ -17,6 +17,7 @@ package org.jahia.modules.jahiaoauth.service;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaoauth.impl.JahiaOAuthAPIBuilder;
 
 import java.util.Map;
 
@@ -49,9 +50,9 @@ public interface JahiaOAuthService {
     /**
      * This method will extract the token and execute the mappers action
      *
-     * @param config  The oauth config for the connector
-     * @param token   String token send by the OAuth API
-     * @param state   String state send back by OAuth API in this context it's the user session ID
+     * @param config The oauth config for the connector
+     * @param token  String token send by the OAuth API
+     * @param state  String state send back by OAuth API in this context it's the user session ID
      * @throws Exception
      */
     void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
@@ -82,6 +83,14 @@ public interface JahiaOAuthService {
      * @param oAuthDefaultApi20 scribe Api 2.0 implementation
      */
     void addOAuthDefaultApi20(String key, DefaultApi20 oAuthDefaultApi20);
+
+    /**
+     * This method will register a builder for a api connector
+     *
+     * @param key        api key
+     * @param apiBuilder custom builder of the api connector
+     */
+    void addOAuthDefaultApi20(String key, JahiaOAuthAPIBuilder apiBuilder);
 
     /**
      * This method will unregister a scribe Api 2.0 by its key for each site
