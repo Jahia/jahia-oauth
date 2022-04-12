@@ -17,7 +17,6 @@ package org.jahia.modules.jahiaoauth.service;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
-import org.jahia.modules.jahiaoauth.impl.JahiaOAuthAPIBuilder;
 
 import java.util.Map;
 
@@ -85,9 +84,11 @@ public interface JahiaOAuthService {
     void addOAuthDefaultApi20(String key, DefaultApi20 oAuthDefaultApi20);
 
     /**
-     * This method will register a builder for a api connector
+     * This method will register a new Scribe Api 2.0 implementation builder
+     * It allows to dynamically build the DefaultApi20 based on the connector config.
+     * Very useful in case the DefaultApi20 need to use custom properties coming from the config for example.
      *
-     * @param key        api key
+     * @param key               api key
      * @param apiBuilder custom builder of the api connector
      */
     void addOAuthDefaultApi20(String key, JahiaOAuthAPIBuilder apiBuilder);
