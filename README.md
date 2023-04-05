@@ -9,5 +9,10 @@ This module exposes an API which allows you to manage open authentication on you
 
 ### Documentation
 
-You can find documentation for this module here: https://academy.jahia.com/documentation/developer/jahia/8/authentication-oauth-saml/building-a-custom-oauth-connector
+You can find documentation for this module here:
 
+Overview and configuration
+https://academy.jahia.com/home/documentation/developer/dx/8/authentication/oauth-modules-and-social-login.html
+
+Building a custom connector
+https://academy.jahia.com/documentation/developer/jahia/8/authentication-oauth-saml/building-a-custom-oauth-connector
