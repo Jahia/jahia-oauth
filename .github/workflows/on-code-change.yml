@@ -38,7 +38,7 @@ jobs:
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
     container:
-      image: jahia/cimg-mvn-cache:ga_cimg_openjdk_11.0.20-node
+      image: jahia/cimg-mvn-cache:ga_cimg_openjdk_8.0.312-node
       credentials:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
