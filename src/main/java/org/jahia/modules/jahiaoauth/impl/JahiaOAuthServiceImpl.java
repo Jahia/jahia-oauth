@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         Map<String, Object> propertiesResult = new HashMap<>();
 
         List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
+        List<JSONObject> jsonObjects = new ArrayList<>();
 
         for (String url : urlsToProcess) {
             // Request all the properties available right now
@@ -115,6 +117,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             if (response.getCode() == HttpServletResponse.SC_OK) {
                 try {
                     JSONObject responseJson = new JSONObject(response.getBody());
+                    jsonObjects.add(responseJson);
                     if (logger.isDebugEnabled()) {
                         logger.debug(responseJson.toString());
                     }
@@ -146,10 +149,20 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                 if (mapperConfig.isActive()) {
                     // Check that all props are found
                     mapperConfig.getMappings().forEach(mapping -> {
-                        if (!propertiesResult.containsKey(mapping.getConnectorProperty())) {
+                        String connectorProperty = mapping.getConnectorProperty();
+                        if (!propertiesResult.containsKey(connectorProperty)) {
                             logger.warn(
                                     "Connector property {} mapped to jcr property {} was not found in the received properties, please check your configuration",
-                                    mapping.getConnectorProperty(), mapping.getMappedProperty());
+                                    connectorProperty, mapping.getMappedProperty());
+                            jsonObjects.forEach(jsonObject -> {
+                                if (jsonObject.has(connectorProperty)) {
+                                    try {
+                                        propertiesResult.put(connectorProperty, jsonObject.getString(connectorProperty));
+                                    } catch (JSONException e) {
+                                        logger.error("", e);
+                                    }
+                                }
+                            });
                         }
                     });
                     jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
@@ -212,7 +225,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty,
-            String propertyName) throws JSONException {
+                                               String propertyName) throws JSONException {
         if (StringUtils.startsWith(pathToProperty, "/")) {
 
             String key = StringUtils.substringAfter(pathToProperty, "/");
@@ -240,7 +253,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult,
-            String siteKey) {
+                               String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
         propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
@@ -249,7 +262,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty,
-            String propertyName) throws JSONException {
+                                              String propertyName) throws JSONException {
         int arrayIndex = Integer.parseInt(StringUtils.substringBetween(pathToProperty, "[", "]"));
         pathToProperty = StringUtils.substringAfter(pathToProperty, "]");
         if (StringUtils.isBlank(pathToProperty) && jsonArray.length() >= arrayIndex) {
