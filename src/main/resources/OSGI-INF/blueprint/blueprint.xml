@@ -10,6 +10,7 @@
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
     <reference id="authPipeline" interface="org.jahia.pipelines.Pipeline" filter="(type=authentication)"/>
+    <reference id="jahiaOAuthConfiguration" interface="org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration"/>
 
     <bean id="jahiaOAuthServiceImpl" class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthServiceImpl">
         <argument>
@@ -215,7 +216,6 @@
 
 
     <bean id="googleConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.GoogleConnectorImpl">
-        <property name="protectedResourceUrl" value="https://www.googleapis.com/oauth2/v3/userinfo"/>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -257,6 +257,7 @@
                 </bean>
             </list>
         </property>
+        <property name="jahiaOAuthConfiguration" ref="jahiaOAuthConfiguration"/>
     </bean>
 
     <service interface="org.jahia.bin.Action">
@@ -340,6 +341,7 @@
                 </bean>
             </list>
         </property>
+        <property name="jahiaOAuthConfiguration" ref="jahiaOAuthConfiguration"/>
     </bean>
 
     <service interface="org.jahia.bin.Action">
@@ -377,7 +379,6 @@
     </service>
 
     <bean id="githubConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.GithubConnectorImpl">
-        <property name="protectedResourceUrl" value="https://api.github.com/user"/>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -395,6 +396,7 @@
                 </bean>
             </list>
         </property>
+        <property name="jahiaOAuthConfiguration" ref="jahiaOAuthConfiguration"/>
     </bean>
 
     <service interface="org.jahia.bin.Action">
@@ -432,7 +434,6 @@
     </service>
 
     <bean id="facebookConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FacebookConnectorImpl">
-        <property name="protectedResourceUrl" value="https://graph.facebook.com/v7.0/me?fields="/>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -484,6 +485,7 @@
                 </bean>
             </list>
         </property>
+        <property name="jahiaOAuthConfiguration" ref="jahiaOAuthConfiguration"/>
     </bean>
 
     <service interface="org.jahia.bin.Action">
@@ -532,12 +534,6 @@
     </service>
 
     <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl">
-        <property name="protectedResourceUrls">
-            <list>
-                <value>https://api.linkedin.com/v2/emailAddress?q=members&amp;projection=(elements*(handle~))</value>
-                <value>https://api.linkedin.com/v2/me?projection=(%s)</value>
-            </list>
-        </property>
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -644,6 +640,7 @@
 -->
             </list>
         </property>
+        <property name="jahiaOAuthConfiguration" ref="jahiaOAuthConfiguration"/>
     </bean>
 
     <service interface="org.jahia.bin.Action">

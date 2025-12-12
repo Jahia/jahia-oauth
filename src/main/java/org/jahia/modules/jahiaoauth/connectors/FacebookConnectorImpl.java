@@ -16,6 +16,7 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +31,13 @@ import java.util.stream.Collectors;
 public class FacebookConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(FacebookConnectorImpl.class);
 
+    public FacebookConnectorImpl() {
+        super(JahiaOAuthConfiguration::getFacebookUserInfoEndpoints);
+    }
+
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        String urlWithProperties = protectedResourceUrl.concat(getAvailableProperties().stream()
+        String urlWithProperties = resolveConfigurationUrl().concat(getAvailableProperties().stream()
                 .map(property -> property.getPropertyToRequest() == null ? property.getName() : property.getPropertyToRequest()).distinct()
                 .collect(Collectors.joining(",")));
 

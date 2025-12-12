@@ -16,6 +16,7 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +33,18 @@ import java.util.stream.Collectors;
 public class LinkedInConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
 
+    public LinkedInConnectorImpl() {
+        super(JahiaOAuthConfiguration::getLinkedinUserInfoEndpoints);
+    }
+
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        return getProtectedResourceUrl(protectedResourceUrl);
+        return getProtectedResourceUrl(resolveConfigurationUrl());
     }
 
     @Override
     public List<String> getProtectedResourceUrls(ConnectorConfig config) {
-        return protectedResourceUrls.stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
+        return resolveConfigurationUrls().stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
     }
 
     private String getProtectedResourceUrl(String protectedResourceUrl) {

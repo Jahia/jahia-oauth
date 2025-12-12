@@ -16,6 +16,7 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.util.Map;
@@ -23,6 +24,10 @@ import java.util.Map;
 public class FranceConnectConnectorImpl extends Connector implements OAuthConnectorService {
 
     private Map<String, String> mapProtectedResourceUrl;
+
+    public FranceConnectConnectorImpl() {
+        super(null);
+    }
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
