@@ -59,13 +59,21 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
     public void activate(Config config) {
         this.config = config;
         logger.info("OAuth connectors configuration activated");
-
+        logEndpoints(config);
     }
 
     @Modified
     public void modified(Config config) {
         this.config = config;
         logger.info("OAuth connectors configuration modified");
+        logEndpoints(config);
+    }
+
+    private static void logEndpoints(Config config) {
+        logger.debug("Facebook endpoints: {}", config.facebookUserInfoEndpoints());
+        logger.debug("Github endpoints: {}", config.githubUserInfoEndpoints());
+        logger.debug("Google endpoints: {}", config.googleUserInfoEndpoints());
+        logger.debug("LinkedIn endpoints: {}", config.linkedinUserInfoEndpoints());
     }
 
     @Override
