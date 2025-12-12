@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+    <modules jcr:primaryType="jnt:modules">
+        <jahia-oauth-test-module j:dependencies="default"
+                                    j:installedModules="jahia-oauth-test-module"
+                                    j:modulePriority="0"
+                                    j:moduleType="templatesSet"
+                                    j:title="Jahia OAuth test module - templatesSet"
+                                    jcr:primaryType="jnt:module">
+            <portlets jcr:primaryType="jnt:portletFolder"/>
+            <files jcr:primaryType="jnt:folder"/>
+            <contents jcr:primaryType="jnt:contentFolder"/>
+            <templates jcr:primaryType="jnt:templatesFolder">
+                <base j:theme="#/modules/jahia-oauth-test-module/templates/files/themes/default"
+                      j:view="jahia-oauth-test-module"
+                      jcr:mixinTypes="jmix:theme"
+                      jcr:primaryType="jnt:template">
+                    <facebook jcr:primaryType="jnt:pageTemplate"/>
+                </base>
+                <base j:theme="#/modules/jahia-oauth-test-module/templates/files/themes/default"
+                      j:view="jahia-oauth-test-module"
+                      jcr:mixinTypes="jmix:theme"
+                      jcr:primaryType="jnt:template">
+                    <google jcr:primaryType="jnt:pageTemplate"/>
+                </base>
+                <base j:theme="#/modules/jahia-oauth-test-module/templates/files/themes/default"
+                      j:view="jahia-oauth-test-module"
+                      jcr:mixinTypes="jmix:theme"
+                      jcr:primaryType="jnt:template">
+                    <linkedin jcr:primaryType="jnt:pageTemplate"/>
+                </base>
+                <base j:theme="#/modules/jahia-oauth-test-module/templates/files/themes/default"
+                      j:view="jahia-oauth-test-module"
+                      jcr:mixinTypes="jmix:theme"
+                      jcr:primaryType="jnt:template">
+                    <github jcr:primaryType="jnt:pageTemplate"/>
+                </base>
+            </templates>
+            <facebook j:templateName="facebook"
+                  jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="Facebook OAuth"/>
+                <pagecontent jcr:primaryType="jnt:contentList">
+                    <facebook-button jcr:primaryType="joant:facebookButton"/>
+                </pagecontent>
+            </facebook>
+            <google j:templateName="google"
+                      jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="Google OAuth"/>
+                <pagecontent jcr:primaryType="jnt:contentList">
+                    <google-button jcr:primaryType="joant:googleButton"/>
+                </pagecontent>
+            </google>
+            <linkedin j:templateName="linkedin"
+                      jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="LinkedIn OAuth"/>
+                <pagecontent jcr:primaryType="jnt:contentList">
+                    <linkedin-button jcr:primaryType="joant:linkedInButton"/>
+                </pagecontent>
+            </linkedin>
+            <github j:templateName="github"
+                    jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="GitHub OAuth"/>
+                <pagecontent jcr:primaryType="jnt:contentList">
+                    <github-button jcr:primaryType="joant:githubButton"/>
+                </pagecontent>
+            </github>
+            <home j:isHomePage="true"
+                  j:templateName="home"
+                  jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="Home"/>
+            </home>
+            <oauth-result j:templateName="oauth-result" jcr:primaryType="jnt:page">
+                <j:translation_en jcr:language="en"
+                                  jcr:mixinTypes="mix:title"
+                                  jcr:primaryType="jnt:translation"
+                                  jcr:title="Authentication Result"/>
+            </oauth-result>
+        </jahia-oauth-test-module>
+    </modules>
+</content>

@@ -1,0 +1,1 @@
+This test module is intended to be used by the [Cypress tests](../tests/).
