@@ -16,14 +16,17 @@
     <div class="user-info">
         <c:choose>
             <c:when test="${renderContext.loggedIn}">
-                <c:set var="firstName" value="${renderContext.user.properties['j:firstName']}"/>
-                <c:set var="lastName" value="${renderContext.user.properties['j:lastName']}"/>
-                <c:set var="email" value="${renderContext.user.properties['j:email']}"/>
                 <div data-test="user-logged-in">
                     <p>Username:<span data-test="username">${fn:escapeXml(renderContext.user.username)}</span></p>
-                    <p>First name:<span data-test="firstName">${firstName}</span></p>
-                    <p>Last name:<span data-test="lastName">${lastName}</span></p>
-                    <p>Email:<span data-test="email">${email}</span></p>
+                    <c:forEach var="prop" items="${renderContext.user.properties}">
+                        <c:if test="${not empty prop.value}">
+                            <c:set var="propName" value="${fn:substringAfter(prop.key, ':')}"/>
+                            <c:if test="${empty propName}">
+                                <c:set var="propName" value="${prop.key}"/>
+                            </c:if>
+                            <p>${fn:escapeXml(prop.key)}:<span data-test="${propName}">${fn:escapeXml(prop.value)}</span></p>
+                        </c:if>
+                    </c:forEach>
                 </div>
             </c:when>
             <c:otherwise>

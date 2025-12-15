@@ -8,13 +8,46 @@ import {assertIsUnauthenticated} from './utils';
 import {ClientCredentials} from './types';
 
 /**
+ * Predefined mapping from test field names to JCR property names
+ * These correspond to standard properties that are commonly used across OAuth providers
+ */
+const PREDEFINED_FIELD_MAPPING: Record<string, string> = {
+    firstName: 'j:firstName',
+    lastName: 'j:lastName',
+    email: 'j:email',
+    title: 'j:title',
+    gender: 'j:gender',
+    organization: 'j:organization',
+    function: 'j:function',
+    about: 'j:about',
+    linkedInID: 'j:linkedInID',
+    twitterID: 'j:twitterID',
+    facebookID: 'j:facebookID',
+    skypeID: 'j:skypeID'
+};
+
+/**
  * Expected user fields to check after successful authentication
+ * Can include both predefined fields (firstName, lastName, email, etc.) and custom fields
  */
 export interface ExpectedUserFields {
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
+    // Standard predefined fields
+    username?: string; // Special case - not a JCR property
+    firstName?: string; // Maps to j:firstName
+    lastName?: string; // Maps to j:lastName
+    email?: string; // Maps to j:email
+    title?: string; // Maps to j:title
+    gender?: string; // Maps to j:gender
+    organization?: string; // Maps to j:organization
+    function?: string; // Maps to j:function
+    about?: string; // Maps to j:about
+    linkedInID?: string; // Maps to j:linkedInID
+    twitterID?: string; // Maps to j:twitterID
+    facebookID?: string; // Maps to j:facebookID
+    skypeID?: string; // Maps to j:skypeID
+
+    // Custom fields - use JCR property name as key (e.g., "j:customField": "value")
+    [customField: string]: string | undefined;
 }
 
 /**
@@ -30,8 +63,9 @@ export interface OAuthConnectorTestConfig<TUser> {
     siteKey: string;
     registerAuthorizeMock: (siteKey: string, credentials: ClientCredentials, authCode: string) => Cypress.Chainable;
     registerTokenMock: (authCode: string) => Cypress.Chainable;
-    registerUserInfoMock: (user: TUser) => Cypress.Chainable;
-    expectedUserFields: ExpectedUserFields; // Fields to validate after authentication - only checks fields that are present
+    registerUserInfoMock: (user: TUser, customFields?: Record<string, string>) => Cypress.Chainable;
+    expectedUserFields: ExpectedUserFields; // Fields to validate after authentication - supports both predefined and custom fields
+    customFields?: Record<string, string>; // Custom fields to pass to registerUserInfoMock
 }
 
 /**
@@ -106,25 +140,38 @@ function simulatePostMessageReload(siteKey: string) {
 
 /**
  * Verify user fields after successful authentication
+ * Handles both predefined fields and custom fields with JCR property names
  */
 function verifyAuthenticatedUserFields(expectedFields: ExpectedUserFields) {
     cy.get('[data-test="user-logged-in"]', {timeout: 10000}).should('be.visible');
 
-    if (expectedFields.username !== undefined) {
-        cy.get('[data-test="username"]').should('contain', expectedFields.username);
-    }
+    // Iterate over all expected fields
+    Object.entries(expectedFields).forEach(([fieldKey, expectedValue]) => {
+        if (expectedValue === undefined) {
+            return; // Skip undefined values
+        }
 
-    if (expectedFields.firstName !== undefined) {
-        cy.get('[data-test="firstName"]').should('contain', expectedFields.firstName);
-    }
+        // Special case: username is not a JCR property
+        if (fieldKey === 'username') {
+            cy.get('[data-test="username"]').should('contain', expectedValue);
+            return;
+        }
 
-    if (expectedFields.lastName !== undefined) {
-        cy.get('[data-test="lastName"]').should('contain', expectedFields.lastName);
-    }
+        // Check if it's a predefined field (firstName, lastName, etc.)
+        if (fieldKey in PREDEFINED_FIELD_MAPPING) {
+            const jcrProperty = PREDEFINED_FIELD_MAPPING[fieldKey];
+            const dataTestAttribute = jcrProperty.substring(2); // Strip 'j:' prefix
+            cy.get(`[data-test="${dataTestAttribute}"]`).should('contain', expectedValue);
+            return;
+        }
 
-    if (expectedFields.email !== undefined) {
-        cy.get('[data-test="email"]').should('contain', expectedFields.email);
-    }
+        // Custom field - assume fieldKey is already the JCR property name (e.g., "j:customField")
+        // Strip namespace prefix for data-test attribute
+        const dataTestAttribute = fieldKey.includes(':') ?
+            fieldKey.substring(fieldKey.indexOf(':') + 1) :
+            fieldKey;
+        cy.get(`[data-test="${dataTestAttribute}"]`).should('contain', expectedValue);
+    });
 }
 
 /**
@@ -139,7 +186,7 @@ export function testSuccessfulAuthentication<TUser>(
     // Configure all mocks with CORRECT credentials and auth code
     config.registerAuthorizeMock(config.siteKey, config.credentials, config.authCode);
     config.registerTokenMock(config.authCode);
-    config.registerUserInfoMock(config.user);
+    config.registerUserInfoMock(config.user, config.customFields);
 
     // Common setup: visit page, stub window.open, click button
     const getPopupLocation = setupOAuthFlowAndClickButton(config);
