@@ -47,11 +47,11 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
     public @interface Config {
         @AttributeDefinition(name = "%facebookUserInfoEndpoints", description = "%facebookUserInfoEndpointsDesc") String facebookUserInfoEndpoints();
 
-        @AttributeDefinition(name = "%githubUserInfoEndpoints", description = "%githubUserInfoEndpointsDesc") String githubUserInfoEndpoints();
+        @AttributeDefinition(name = "%gitHubUserInfoEndpoints", description = "%gitHubUserInfoEndpointsDesc") String gitHubUserInfoEndpoints();
 
         @AttributeDefinition(name = "%googleUserInfoEndpoints", description = "%googleUserInfoEndpointsDesc") String googleUserInfoEndpoints();
 
-        @AttributeDefinition(name = "%linkedinUserInfoEndpoints", description = "%linkedinUserInfoEndpointsDesc") String linkedinUserInfoEndpoints();
+        @AttributeDefinition(name = "%linkedInUserInfoEndpoints", description = "%linkedInUserInfoEndpointsDesc") String linkedInUserInfoEndpoints();
 
     }
 
@@ -71,9 +71,9 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
 
     private static void logEndpoints(Config config) {
         logger.debug("Facebook endpoints: {}", config.facebookUserInfoEndpoints());
-        logger.debug("Github endpoints: {}", config.githubUserInfoEndpoints());
+        logger.debug("GitHub endpoints: {}", config.gitHubUserInfoEndpoints());
         logger.debug("Google endpoints: {}", config.googleUserInfoEndpoints());
-        logger.debug("LinkedIn endpoints: {}", config.linkedinUserInfoEndpoints());
+        logger.debug("LinkedIn endpoints: {}", config.linkedInUserInfoEndpoints());
     }
 
     @Override
@@ -82,13 +82,13 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
     }
 
     @Override
-    public List<String> getGithubUserInfoEndpoints() {
-        return readConfiguration(config.githubUserInfoEndpoints());
+    public List<String> getGitHubUserInfoEndpoints() {
+        return readConfiguration(config.gitHubUserInfoEndpoints());
     }
 
     @Override
-    public List<String> getLinkedinUserInfoEndpoints() {
-        return readConfiguration(config.linkedinUserInfoEndpoints());
+    public List<String> getLinkedInUserInfoEndpoints() {
+        return readConfiguration(config.linkedInUserInfoEndpoints());
     }
 
     @Override

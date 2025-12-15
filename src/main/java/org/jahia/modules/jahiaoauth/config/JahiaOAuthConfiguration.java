@@ -58,7 +58,7 @@ public interface JahiaOAuthConfiguration {
      *
      * @return a list of GitHub user info endpoint URLs
      */
-    List<String> getGithubUserInfoEndpoints();
+    List<String> getGitHubUserInfoEndpoints();
 
     /**
      * Gets the list of LinkedIn user information endpoints.
@@ -69,7 +69,7 @@ public interface JahiaOAuthConfiguration {
      *
      * @return a list of LinkedIn user info endpoint URLs
      */
-    List<String> getLinkedinUserInfoEndpoints();
+    List<String> getLinkedInUserInfoEndpoints();
 
     /**
      * Gets the list of Google user information endpoints.

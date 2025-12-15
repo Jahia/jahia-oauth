@@ -20,6 +20,6 @@ import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 public class GithubConnectorImpl extends Connector implements OAuthConnectorService {
     public GithubConnectorImpl() {
-        super(JahiaOAuthConfiguration::getGithubUserInfoEndpoints);
+        super(JahiaOAuthConfiguration::getGitHubUserInfoEndpoints);
     }
 }

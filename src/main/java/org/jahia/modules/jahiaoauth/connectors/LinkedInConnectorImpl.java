@@ -34,7 +34,7 @@ public class LinkedInConnectorImpl extends Connector implements OAuthConnectorSe
     private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
 
     public LinkedInConnectorImpl() {
-        super(JahiaOAuthConfiguration::getLinkedinUserInfoEndpoints);
+        super(JahiaOAuthConfiguration::getLinkedInUserInfoEndpoints);
     }
 
     @Override
