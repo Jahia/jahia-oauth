@@ -58,9 +58,14 @@ interface ConnectorConfig<TUser> {
 }
 
 /**
+ * Union type for all user types
+ */
+type OAuthUser = GoogleUser | LinkedInUser | GitHubUser | FacebookUser;
+
+/**
  * All OAuth connectors to test
  */
-const connectors: ConnectorConfig<any>[] = [
+const connectors: ConnectorConfig<OAuthUser>[] = [
     {
         name: 'Google',
         buttonSelector: 'google-button',
@@ -165,7 +170,7 @@ const connectors: ConnectorConfig<any>[] = [
 connectors.forEach(connector => {
     describe(`Tests for the ${connector.name} connector`, () => {
         let siteKey: string;
-        let user: any;
+        let user: OAuthUser;
         let authCode: string;
         let clientCredentials: ClientCredentials;
 
@@ -209,7 +214,7 @@ connectors.forEach(connector => {
         });
 
         it('Should display user details when successfully authenticated', () => {
-            const config: OAuthConnectorTestConfig<any> = {
+            const config: OAuthConnectorTestConfig<OAuthUser> = {
                 connectorName: connector.name,
                 pageUrl: `/sites/${siteKey}/${connector.name.toLowerCase()}.html`,
                 buttonSelector: connector.buttonSelector,
@@ -250,7 +255,7 @@ connectors.forEach(connector => {
             // Re-configure the connector with custom mapping
             connector.configurator(siteKey, clientCredentials, customMapping);
 
-            const config: OAuthConnectorTestConfig<any> = {
+            const config: OAuthConnectorTestConfig<OAuthUser> = {
                 connectorName: connector.name,
                 pageUrl: `/sites/${siteKey}/${connector.name.toLowerCase()}.html`,
                 buttonSelector: connector.buttonSelector,
@@ -275,7 +280,7 @@ connectors.forEach(connector => {
         });
 
         it('Should remain unauthenticated when the client credentials do not match', () => {
-            const config: OAuthConnectorTestConfig<any> = {
+            const config: OAuthConnectorTestConfig<OAuthUser> = {
                 connectorName: connector.name,
                 pageUrl: `/sites/${siteKey}/${connector.name.toLowerCase()}.html`,
                 buttonSelector: connector.buttonSelector,
@@ -296,7 +301,7 @@ connectors.forEach(connector => {
         });
 
         it('Should remain unauthenticated when the authorization code does not match', () => {
-            const config: OAuthConnectorTestConfig<any> = {
+            const config: OAuthConnectorTestConfig<OAuthUser> = {
                 connectorName: connector.name,
                 pageUrl: `/sites/${siteKey}/${connector.name.toLowerCase()}.html`,
                 buttonSelector: connector.buttonSelector,
