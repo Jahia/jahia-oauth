@@ -10,7 +10,7 @@
     <reference id="JahiaTemplateManagerService" interface="org.jahia.api.templates.JahiaTemplateManagerService"/>
     <reference id="JahiaUserManagerService" interface="org.jahia.api.usermanager.JahiaUserManagerService" availability="mandatory"/>
     <reference id="authPipeline" interface="org.jahia.pipelines.Pipeline" filter="(type=authentication)"/>
-    <reference id="jahiaOAuthConfiguration" interface="org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration"/>
+    <reference id="jahiaOAuthConfiguration" interface="org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration" availability="mandatory"/>
 
     <bean id="jahiaOAuthServiceImpl" class="org.jahia.modules.jahiaoauth.impl.JahiaOAuthServiceImpl">
         <argument>
@@ -433,7 +433,7 @@
         </service-properties>
     </service>
 
-    <bean id="facebookConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FacebookConnectorImpl">
+    <bean id="facebookConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FacebookConnectorImpl" init-method="init">
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -533,7 +533,7 @@
         </service-properties>
     </service>
 
-    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl">
+    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl" init-method="init">
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">

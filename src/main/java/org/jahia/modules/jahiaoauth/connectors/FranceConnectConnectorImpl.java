@@ -26,8 +26,8 @@ public class FranceConnectConnectorImpl extends Connector implements OAuthConnec
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        return mapProtectedResourceUrl.get(
-                config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
+        return mapProtectedResourceUrl
+                .get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
     }
 
     public void setMapProtectedResourceUrl(Map<String, String> mapProtectedResourceUrl) {

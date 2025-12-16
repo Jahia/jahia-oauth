@@ -32,18 +32,21 @@ import java.util.stream.Collectors;
 public class LinkedInConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
 
+    public void init() {
+        List<String> urls = jahiaOAuthConfiguration.getLinkedInUserInfoEndpoints();
+        if (urls != null && !urls.isEmpty()) {
+            setProtectedResourceUrls(urls);
+        }
+    }
+
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        List<String> urls = jahiaOAuthConfiguration.getLinkedInUserInfoEndpoints();
-        String baseUrl = urls.isEmpty() ? "" : urls.get(0);
-        return getProtectedResourceUrl(baseUrl);
+        return getProtectedResourceUrl(protectedResourceUrl);
     }
 
     @Override
     public List<String> getProtectedResourceUrls(ConnectorConfig config) {
-        return jahiaOAuthConfiguration.getLinkedInUserInfoEndpoints().stream()
-                .map(this::getProtectedResourceUrl)
-                .collect(Collectors.toList());
+        return protectedResourceUrls.stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
     }
 
     private String getProtectedResourceUrl(String protectedResourceUrl) {
