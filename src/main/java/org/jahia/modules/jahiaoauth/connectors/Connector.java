@@ -23,28 +23,22 @@ import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class Connector implements OAuthConnectorService {
 
-    private final Function<JahiaOAuthConfiguration, List<String>> configurationUrlsResolver;
     protected String protectedResourceUrl;
     protected List<String> protectedResourceUrls;
     protected List<ConnectorPropertyInfo> availableProperties;
-    private JahiaOAuthConfiguration jahiaOAuthConfiguration;
-
-    protected Connector(Function<JahiaOAuthConfiguration, List<String>> configurationUrlsResolver) {
-        this.configurationUrlsResolver = configurationUrlsResolver;
-    }
+    protected JahiaOAuthConfiguration jahiaOAuthConfiguration;
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        return resolveConfigurationUrl();
+        return protectedResourceUrl != null ? protectedResourceUrl : "";
     }
 
     @Override
     public List<String> getProtectedResourceUrls(ConnectorConfig config) {
-        return resolveConfigurationUrls();
+        return protectedResourceUrls != null ? protectedResourceUrls : Collections.emptyList();
     }
 
     @Override
@@ -66,14 +60,5 @@ public abstract class Connector implements OAuthConnectorService {
 
     public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
         this.jahiaOAuthConfiguration = jahiaOAuthConfiguration;
-    }
-
-    protected List<String> resolveConfigurationUrls() {
-        return configurationUrlsResolver == null ? Collections.emptyList() : configurationUrlsResolver.apply(jahiaOAuthConfiguration);
-    }
-
-    protected String resolveConfigurationUrl() {
-        List<String> resolvedUrls = resolveConfigurationUrls();
-        return resolvedUrls.isEmpty() ? "" : resolvedUrls.get(0);
     }
 }

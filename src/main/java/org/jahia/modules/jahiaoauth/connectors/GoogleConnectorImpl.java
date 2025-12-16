@@ -15,12 +15,21 @@
  */
 package org.jahia.modules.jahiaoauth.connectors;
 
-import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
+
+import java.util.List;
 
 public class GoogleConnectorImpl extends Connector implements OAuthConnectorService {
 
-    public GoogleConnectorImpl() {
-        super(JahiaOAuthConfiguration::getGoogleUserInfoEndpoints);
+    @Override
+    public String getProtectedResourceUrl(ConnectorConfig config) {
+        List<String> urls = jahiaOAuthConfiguration.getGoogleUserInfoEndpoints();
+        return urls.isEmpty() ? "" : urls.get(0);
+    }
+
+    @Override
+    public List<String> getProtectedResourceUrls(ConnectorConfig config) {
+        return jahiaOAuthConfiguration.getGoogleUserInfoEndpoints();
     }
 }
