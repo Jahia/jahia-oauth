@@ -16,10 +16,18 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
+import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,8 +37,33 @@ import java.util.stream.Collectors;
  *
  * @author dgaillard
  */
+@Component(service = { ConnectorService.class, OAuthConnectorService.class }, property = {
+        JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=LinkedInApi20" }, immediate = true)
 public class LinkedInConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(LinkedInConnectorImpl.class);
+
+    @Activate
+    public void activate() {
+        List<ConnectorPropertyInfo> properties = new ArrayList<>();
+
+        properties.add(new ConnectorPropertyInfo("id", "string"));
+
+        properties.add(new ConnectorPropertyInfo("localizedFirstName", "string"));
+
+        properties.add(new ConnectorPropertyInfo("localizedLastName", "string"));
+
+        ConnectorPropertyInfo pictureUrl = new ConnectorPropertyInfo("pictureUrl", "string");
+        pictureUrl.setPropertyToRequest("profilePicture(displayImage~:playableStreams)");
+        pictureUrl.setValuePath("/profilePicture/displayImage~/elements[0]/identifiers[0]/identifier");
+        properties.add(pictureUrl);
+
+        ConnectorPropertyInfo emailAddress = new ConnectorPropertyInfo("emailAddress", "email");
+        emailAddress.setValuePath("[0]/handle~/emailAddress");
+        emailAddress.setPropertyToRequest("elements");
+        properties.add(emailAddress);
+
+        setAvailableProperties(properties);
+    }
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
@@ -54,4 +87,9 @@ public class LinkedInConnectorImpl extends Connector implements OAuthConnectorSe
         return urlWithProperties;
     }
 
+    @Reference
+    @Override
+    public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
+        super.setJahiaOAuthConfiguration(jahiaOAuthConfiguration);
+    }
 }

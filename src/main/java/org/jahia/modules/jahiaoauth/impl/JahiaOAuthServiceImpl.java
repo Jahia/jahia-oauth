@@ -35,6 +35,9 @@ import org.jahia.osgi.BundleUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,25 +45,30 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Main OAuth service implementation for Jahia OAuth module.
+ * Manages OAuth 2.0 operations including authorization, token exchange, and user mapping.
+ *
  * @author dgaillard
  */
+@Component(service = JahiaOAuthService.class, immediate = true)
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
 
     private final Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map;
+
+    @Reference
     private JahiaAuthMapperService jahiaAuthMapperService;
 
     public JahiaOAuthServiceImpl() {
-        this.oAuthDefaultApi20Map = new HashMap<>();
+        this.oAuthDefaultApi20Map = new ConcurrentHashMap<>();
     }
 
-    public JahiaOAuthServiceImpl(Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map) {
-        this();
-        if (oAuthDefaultApi20Map != null && !oAuthDefaultApi20Map.isEmpty()) {
-            oAuthDefaultApi20Map.forEach(this::addOAuthDefaultApi20);
-        }
+    @Activate
+    public void activate() {
+        logger.info("JahiaOAuthService activated");
     }
 
     @Override
@@ -303,9 +311,5 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     public void removeOAuthDefaultApi20(DefaultApi20 oAuthDefaultApi20) {
         oAuthDefaultApi20Map.entrySet().stream().filter(entry -> entry.getValue().equals(oAuthDefaultApi20)).findFirst()
                 .ifPresent(oAuthDefaultApi20Entry -> oAuthDefaultApi20Map.remove(oAuthDefaultApi20Entry.getKey()));
-    }
-
-    public void setJahiaAuthMapperService(JahiaAuthMapperService jahiaAuthMapperService) {
-        this.jahiaAuthMapperService = jahiaAuthMapperService;
     }
 }
