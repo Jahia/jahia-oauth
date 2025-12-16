@@ -31,16 +31,11 @@ import java.util.stream.Collectors;
 public class FacebookConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(FacebookConnectorImpl.class);
 
-    public void init() {
-        List<String> urls = jahiaOAuthConfiguration.getFacebookUserInfoEndpoints();
-        if (urls != null && !urls.isEmpty()) {
-            setProtectedResourceUrl(urls.get(0));
-        }
-    }
-
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        String urlWithProperties = protectedResourceUrl.concat(getAvailableProperties().stream()
+        List<String> urls = jahiaOAuthConfiguration.getFacebookUserInfoEndpoints();
+        String userInfoEndpoint = urls.get(0);
+        String urlWithProperties = userInfoEndpoint.concat(getAvailableProperties().stream()
                 .map(property -> property.getPropertyToRequest() == null ? property.getName() : property.getPropertyToRequest()).distinct()
                 .collect(Collectors.joining(",")));
 

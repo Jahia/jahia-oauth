@@ -433,7 +433,7 @@
         </service-properties>
     </service>
 
-    <bean id="facebookConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FacebookConnectorImpl" init-method="init">
+    <bean id="facebookConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.FacebookConnectorImpl">
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
@@ -533,7 +533,7 @@
         </service-properties>
     </service>
 
-    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl" init-method="init">
+    <bean id="linkedInConnectorImpl" class="org.jahia.modules.jahiaoauth.connectors.LinkedInConnectorImpl">
         <property name="availableProperties">
             <list>
                 <bean class="org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo">
