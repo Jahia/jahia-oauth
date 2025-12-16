@@ -34,12 +34,13 @@ public class LinkedInConnectorImpl extends Connector implements OAuthConnectorSe
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
-        return getProtectedResourceUrl(protectedResourceUrl);
+        return null; // never called
     }
 
     @Override
     public List<String> getProtectedResourceUrls(ConnectorConfig config) {
-        return protectedResourceUrls.stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
+        List<String> urls = jahiaOAuthConfiguration.getLinkedInUserInfoEndpoints();
+        return urls.stream().map(this::getProtectedResourceUrl).collect(Collectors.toList());
     }
 
     private String getProtectedResourceUrl(String protectedResourceUrl) {

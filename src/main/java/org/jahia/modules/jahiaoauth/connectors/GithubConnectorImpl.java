@@ -15,7 +15,16 @@
  */
 package org.jahia.modules.jahiaoauth.connectors;
 
+import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
+import java.util.List;
+
 public class GithubConnectorImpl extends Connector implements OAuthConnectorService {
+
+    @Override
+    public String getProtectedResourceUrl(ConnectorConfig config) {
+        List<String> urls = jahiaOAuthConfiguration.getGitHubUserInfoEndpoints();
+        return urls.get(0);
+    }
 }

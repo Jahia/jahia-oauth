@@ -15,8 +15,8 @@
  */
 package org.jahia.modules.jahiaoauth.connectors;
 
-import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
 
 import java.util.ArrayList;
@@ -24,22 +24,13 @@ import java.util.List;
 
 public abstract class Connector implements OAuthConnectorService {
 
-    protected String protectedResourceUrl;
     protected List<String> protectedResourceUrls;
     protected List<ConnectorPropertyInfo> availableProperties;
-
-    @Override
-    public String getProtectedResourceUrl(ConnectorConfig config) {
-        return protectedResourceUrl;
-    }
+    protected JahiaOAuthConfiguration jahiaOAuthConfiguration;
 
     @Override
     public List<ConnectorPropertyInfo> getAvailableProperties() {
         return availableProperties;
-    }
-
-    public void setProtectedResourceUrl(String protectedResourceUrl) {
-        this.protectedResourceUrl = protectedResourceUrl;
     }
 
     public void setAvailableProperties(List<ConnectorPropertyInfo> availableProperties) {
@@ -48,5 +39,9 @@ public abstract class Connector implements OAuthConnectorService {
 
     public void setProtectedResourceUrls(List<String> protectedResourceUrls) {
         this.protectedResourceUrls = protectedResourceUrls;
+    }
+
+    public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
+        this.jahiaOAuthConfiguration = jahiaOAuthConfiguration;
     }
 }
