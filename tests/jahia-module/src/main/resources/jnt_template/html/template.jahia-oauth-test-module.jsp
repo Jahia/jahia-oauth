@@ -20,11 +20,7 @@
                     <p>Username:<span data-test="username">${fn:escapeXml(renderContext.user.username)}</span></p>
                     <c:forEach var="prop" items="${renderContext.user.properties}">
                         <c:if test="${not empty prop.value}">
-                            <c:set var="propName" value="${fn:substringAfter(prop.key, ':')}"/>
-                            <c:if test="${empty propName}">
-                                <c:set var="propName" value="${prop.key}"/>
-                            </c:if>
-                            <p>${fn:escapeXml(prop.key)}:<span data-test="${propName}">${fn:escapeXml(prop.value)}</span></p>
+                            <p>${fn:escapeXml(prop.key)}:<span data-test="${prop.key}">${fn:escapeXml(prop.value)}</span></p>
                         </c:if>
                     </c:forEach>
                 </div>
