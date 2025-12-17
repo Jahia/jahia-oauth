@@ -157,19 +157,14 @@ function verifyAuthenticatedUserFields(expectedFields: ExpectedUserFields) {
             return;
         }
 
-        // Check if it's a predefined field (firstName, lastName, etc.)
+        // For both predefined and custom fields, use the full JCR property name as data-test attribute
+        let dataTestAttribute: string;
         if (fieldKey in PREDEFINED_FIELD_MAPPING) {
-            const jcrProperty = PREDEFINED_FIELD_MAPPING[fieldKey];
-            const dataTestAttribute = jcrProperty.substring(2); // Strip 'j:' prefix
-            cy.get(`[data-test="${dataTestAttribute}"]`).should('contain', expectedValue);
-            return;
+            dataTestAttribute = PREDEFINED_FIELD_MAPPING[fieldKey]; // E.g., 'j:firstName'
+        } else {
+            dataTestAttribute = fieldKey; // Custom field, e.g., 'j:customField'
         }
 
-        // Custom field - assume fieldKey is already the JCR property name (e.g., "j:customField")
-        // Strip namespace prefix for data-test attribute
-        const dataTestAttribute = fieldKey.includes(':') ?
-            fieldKey.substring(fieldKey.indexOf(':') + 1) :
-            fieldKey;
         cy.get(`[data-test="${dataTestAttribute}"]`).should('contain', expectedValue);
     });
 }
@@ -311,4 +306,3 @@ export function testAuthenticationWithWrongAuthCode<TUser>(
     // EXPECTED: User should remain unauthenticated (token exchange failed)
     assertIsUnauthenticated();
 }
-
