@@ -16,10 +16,18 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
+import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +36,44 @@ import java.util.stream.Collectors;
  *
  * @author dgaillard
  */
+@Component(service = { ConnectorService.class, OAuthConnectorService.class }, property = {
+        JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=FacebookApi" }, immediate = true)
 public class FacebookConnectorImpl extends Connector implements OAuthConnectorService {
     private static final Logger logger = LoggerFactory.getLogger(FacebookConnectorImpl.class);
+
+    @Activate
+    public void activate() {
+        List<ConnectorPropertyInfo> properties = new ArrayList<>();
+
+        properties.add(new ConnectorPropertyInfo("id", "string"));
+        properties.add(new ConnectorPropertyInfo("name", "string"));
+        properties.add(new ConnectorPropertyInfo("first_name", "string"));
+        properties.add(new ConnectorPropertyInfo("last_name", "string"));
+        properties.add(new ConnectorPropertyInfo("gender", "string"));
+
+        ConnectorPropertyInfo birthday = new ConnectorPropertyInfo("birthday", "date");
+        birthday.setValueFormat("MM/dd/yyyy");
+        properties.add(birthday);
+
+        properties.add(new ConnectorPropertyInfo("email", "email"));
+
+        ConnectorPropertyInfo pictureUrl = new ConnectorPropertyInfo("pictureUrl", "string");
+        pictureUrl.setPropertyToRequest("picture");
+        pictureUrl.setValuePath("/data/url");
+        properties.add(pictureUrl);
+
+        ConnectorPropertyInfo locationName = new ConnectorPropertyInfo("locationName", "string");
+        locationName.setPropertyToRequest("location");
+        locationName.setValuePath("/name");
+        properties.add(locationName);
+
+        ConnectorPropertyInfo hometownName = new ConnectorPropertyInfo("hometownName", "string");
+        hometownName.setPropertyToRequest("hometown");
+        hometownName.setValuePath("/name");
+        properties.add(hometownName);
+
+        setAvailableProperties(properties);
+    }
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
@@ -43,5 +87,11 @@ public class FacebookConnectorImpl extends Connector implements OAuthConnectorSe
             logger.debug("Protected Resource URL = {}", urlWithProperties);
         }
         return urlWithProperties;
+    }
+
+    @Reference
+    @Override
+    public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
+        super.setJahiaOAuthConfiguration(jahiaOAuthConfiguration);
     }
 }

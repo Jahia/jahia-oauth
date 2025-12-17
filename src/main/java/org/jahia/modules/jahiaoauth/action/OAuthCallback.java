@@ -71,9 +71,11 @@ public class OAuthCallback extends Action {
                 true, null);
     }
 
+
     public void setSettingsService(SettingsService settingsService) {
         this.settingsService = settingsService;
     }
+
 
     public void setJahiaOAuthService(JahiaOAuthService jahiaOAuthService) {
         this.jahiaOAuthService = jahiaOAuthService;
