@@ -160,11 +160,11 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             if (response.getCode() == HttpServletResponse.SC_OK) {
                 try {
                     JSONObject responseJson = new JSONObject(response.getBody());
-                    // Store all top-level properties from JSON for potential dynamic mapping
-                    extractAllJsonProperties(responseJson, allRawJsonProperties);
                     if (logger.isDebugEnabled()) {
                         logger.debug(responseJson.toString());
                     }
+                    // Store all top-level properties from JSON for potential dynamic mapping
+                    extractAllJsonProperties(responseJson, allRawJsonProperties);
 
                     // Store in a simple map the results by properties as mapped in the connector
                     propertiesResult.putAll(getPropertiesResult(connectorService, responseJson));
@@ -228,32 +228,28 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
      * @param jsonObject the JSON object to extract properties from
      * @param targetMap  the map to populate with extracted properties
      */
-    private void extractAllJsonProperties(JSONObject jsonObject, Map<String, Object> targetMap) {
+    private void extractAllJsonProperties(JSONObject jsonObject, Map<String, Object> targetMap) throws JSONException {
         Iterator<String> keys = jsonObject.keys();
         while (keys.hasNext()) {
             String key = keys.next();
-            try {
-                Object value = jsonObject.get(key);
+            Object value = jsonObject.get(key);
 
-                // Convert JSONObject.NULL to Java null
-                if (value == JSONObject.NULL) {
-                    value = null;
-                }
+            // Convert JSONObject.NULL to Java null
+            if (value == JSONObject.NULL) {
+                value = null;
+            }
 
-                // Only extract simple types: String, Number (Integer, Long, Double), Boolean, or null
-                if (value == null || value instanceof String || value instanceof Number || value instanceof Boolean) {
-                    Object previousValue = targetMap.put(key, value);
-                    if (previousValue != null) {
-                        logger.debug("Property '{}' got overwritten - old value: '{}', new value: '{}'", key, previousValue, value);
-                    }
-                } else {
-                    // Skip complex types (JSONObject, JSONArray, or any other unexpected types)
-                    logger.debug(
-                            "Skipping non-simple property '{}' of type '{}' - use connector's availableProperties with valuePath for complex values",
-                            key, value.getClass().getSimpleName());
+            // Only extract simple types: String, Number (Integer, Long, Double), Boolean, or null
+            if (value == null || value instanceof String || value instanceof Number || value instanceof Boolean) {
+                Object previousValue = targetMap.put(key, value);
+                if (previousValue != null) {
+                    logger.debug("Property '{}' got overwritten - old value: '{}', new value: '{}'", key, previousValue, value);
                 }
-            } catch (JSONException e) {
-                logger.error("Failed to extract property '{}' from JSON: {}", key, e.getMessage(), e);
+            } else {
+                // Skip complex types (JSONObject, JSONArray, or any other unexpected types)
+                logger.debug(
+                        "Skipping non-simple property '{}' of type '{}' - use connector's availableProperties with valuePath for complex values",
+                        key, value.getClass().getSimpleName());
             }
         }
     }
