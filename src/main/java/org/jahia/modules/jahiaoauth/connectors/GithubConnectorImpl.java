@@ -16,15 +16,46 @@
 package org.jahia.modules.jahiaoauth.connectors;
 
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
+import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
+import org.jahia.modules.jahiaauth.service.ConnectorService;
+import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.OAuthConnectorService;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Component(service = { ConnectorService.class, OAuthConnectorService.class }, property = {
+        JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=GitHubApi" }, immediate = true)
 public class GithubConnectorImpl extends Connector implements OAuthConnectorService {
 
     @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         List<String> urls = jahiaOAuthConfiguration.getGitHubUserInfoEndpoints();
         return urls.get(0);
+    }
+
+    @Activate
+    public void activate() {
+        List<ConnectorPropertyInfo> properties = new ArrayList<>();
+
+        properties.add(new ConnectorPropertyInfo("id", "string"));
+
+        properties.add(new ConnectorPropertyInfo("name", "string"));
+
+        ConnectorPropertyInfo profilePictureUrl = new ConnectorPropertyInfo("profilePictureUrl", "string");
+        profilePictureUrl.setPropertyToRequest("avatar_url");
+        properties.add(profilePictureUrl);
+
+        setAvailableProperties(properties);
+    }
+
+    @Reference
+    @Override
+    public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
+        super.setJahiaOAuthConfiguration(jahiaOAuthConfiguration);
     }
 }

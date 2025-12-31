@@ -16,22 +16,29 @@
 package org.jahia.modules.jahiaoauth.action;
 
 import org.jahia.bin.filters.AbstractServletFilter;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
 
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import java.io.IOException;
 
 /**
  * This servlet is only here to support FC test server, which only allows /callback url. This can only be used in a root context.
  */
+@Component(immediate = true, service = AbstractServletFilter.class)
 public class FranceConnectFilter extends AbstractServletFilter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // Do nothing
+    }
+
+    @Activate
+    public void activate() {
+        setBeanName("fcfilter");
+        setFilterName("fcfilter");
+        setUrlPatterns(new String[] { "/callback" });
+        setOrder(0);
     }
 
     @Override
