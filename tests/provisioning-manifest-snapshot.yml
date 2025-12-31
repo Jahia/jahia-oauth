@@ -3,6 +3,7 @@
     - 'mvn:org.jahia.modules/jahia-authentication'
     - 'mvn:org.jahia.modules/jahia-oauth'
     - 'mvn:org.jahia.modules/jcr-auth-provider'
+    - 'mvn:org.jahia.test/jahia-oauth-test-module'
   autoStart: true
   uninstallPreviousVersion: true
 - include: 'provisioning.yml'
