@@ -15,6 +15,7 @@
  */
 package org.jahia.modules.jahiaoauth.impl;
 
+import com.github.scribejava.apis.*;
 import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.builder.api.DefaultApi20;
@@ -31,6 +32,7 @@ import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
 import org.jahia.modules.jahiaauth.service.JahiaAuthMapperService;
 import org.jahia.modules.jahiaauth.service.MapperConfig;
 import org.jahia.modules.jahiaoauth.service.*;
+import org.jahia.modules.scribejava.apis.FranceConnectApi;
 import org.jahia.osgi.BundleUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,6 +70,39 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Activate
     public void activate() {
+        // Simple APIs
+        addOAuthDefaultApi20("LinkedInApi20", LinkedInApi20.instance());
+        addOAuthDefaultApi20("VkontakteApi", VkontakteApi.instance());
+        addOAuthDefaultApi20("HHApi", HHApi.instance());
+        addOAuthDefaultApi20("GitHubApi", GitHubApi.instance());
+        addOAuthDefaultApi20("MailruApi", MailruApi.instance());
+        addOAuthDefaultApi20("GeniusApi", GeniusApi.instance());
+        addOAuthDefaultApi20("Foursquare2Api", Foursquare2Api.instance());
+        addOAuthDefaultApi20("RenrenApi", RenrenApi.instance());
+        addOAuthDefaultApi20("KaixinApi20", KaixinApi20.instance());
+        addOAuthDefaultApi20("ViadeoApi", ViadeoApi.instance());
+        addOAuthDefaultApi20("GoogleApi20", GoogleApi20.instance());
+        addOAuthDefaultApi20("PinterestApi", PinterestApi.instance());
+        addOAuthDefaultApi20("SinaWeiboApi20", SinaWeiboApi20.instance());
+        addOAuthDefaultApi20("OdnoklassnikiApi", OdnoklassnikiApi.instance());
+        addOAuthDefaultApi20("TutByApi", TutByApi.instance());
+        addOAuthDefaultApi20("LiveApi", LiveApi.instance());
+        addOAuthDefaultApi20("DoktornaraboteApi", DoktornaraboteApi.instance());
+        addOAuthDefaultApi20("NaverApi", NaverApi.instance());
+        addOAuthDefaultApi20("MisfitApi", MisfitApi.instance());
+        addOAuthDefaultApi20("StackExchangeApi", StackExchangeApi.instance());
+        addOAuthDefaultApi20("ImgurApi", ImgurApi.instance());
+        addOAuthDefaultApi20("FacebookApi", FacebookApi.customVersion("7.0"));
+        // Register FranceConnect APIs with custom configuration
+        addOAuthDefaultApi20("FranceConnectApi", new FranceConnectApi() {{
+            setAccessTokenEndpoint("https://app.franceconnect.gouv.fr/api/v1/token");
+            setAuthorizationBaseUrl("https://app.franceconnect.gouv.fr/api/v1/authorize");
+        }});
+        addOAuthDefaultApi20("FranceConnectApiDev", new FranceConnectApi() {{
+            setAccessTokenEndpoint("https://fcp.integ01.dev-franceconnect.fr/api/v1/token");
+            setAuthorizationBaseUrl("https://fcp.integ01.dev-franceconnect.fr/api/v1/authorize");
+        }});
+
         logger.info("JahiaOAuthService activated");
     }
 
@@ -288,9 +323,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Override
     public void addOAuthDefaultApi20(String key, DefaultApi20 oAuthDefaultApi20) {
-        JahiaOAuthDefaultAPIBuilder api = new JahiaOAuthDefaultAPIBuilder();
-        api.setDefaultApi20(oAuthDefaultApi20);
-        oAuthDefaultApi20Map.put(key, api);
+        oAuthDefaultApi20Map.put(key, new JahiaOAuthDefaultAPIBuilder(oAuthDefaultApi20));
     }
 
     @Override
