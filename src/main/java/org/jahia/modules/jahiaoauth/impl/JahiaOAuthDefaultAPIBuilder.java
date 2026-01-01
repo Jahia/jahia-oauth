@@ -9,6 +9,10 @@ import org.jahia.modules.jahiaoauth.service.JahiaOAuthAPIBuilder;
  */
 public class JahiaOAuthDefaultAPIBuilder implements JahiaOAuthAPIBuilder {
 
+    public JahiaOAuthDefaultAPIBuilder(DefaultApi20 defaultApi20) {
+        this.defaultApi20 = defaultApi20;
+    }
+
     private DefaultApi20 defaultApi20;
 
     public void setDefaultApi20(DefaultApi20 defaultApi20) {

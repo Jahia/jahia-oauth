@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2002-2021 Jahia Solutions Group SA. All rights reserved.
+ * Copyright (C) 2002-2025 Jahia Solutions Group SA. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jahia.modules.jahiaoauth.action;
+package org.jahia.modules.jahiaoauth.action.impl;
 
 import org.jahia.bin.Action;
 import org.jahia.modules.jahiaauth.service.SettingsService;
+import org.jahia.modules.jahiaoauth.action.OAuthCallback;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-@Component(service = Action.class, immediate = true)
-public class ConnectToFranceConnect extends ConnectToOAuthProvider {
+@Component(
+    service = Action.class,
+    configurationPolicy = ConfigurationPolicy.REQUIRE,
+    configurationPid = "org.jahia.modules.jahiaoauth.connector.actions"
+)
+public class ConfigurableOAuthCallback extends OAuthCallback {
 
     @Activate
-    public void activate() {
-        setName("connectToFranceConnectAction");
+    public void activate(Map<String, Object> config) {
+        setName((String) config.get("callbackActionName"));
         setRequireAuthenticatedUser(false);
         setRequiredMethods("GET");
-        setConnectorName("FranceConnectApi");
-    }
-
-    @Override
-    public Map<String, String> getAdditionalParams() {
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("nonce", UUID.randomUUID().toString());
-        return parameters;
+        setConnectorName((String) config.get("connectorName"));
     }
 
     @Reference
