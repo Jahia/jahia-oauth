@@ -53,48 +53,45 @@ export function registerGoogleOauthAuthorizeMock(
 }
 
 export function registerGoogleOauthTokenMock(authCode: string) {
-    // Use direct WireMock API to support bodyPatterns for form parameter matching
-    // WireMock Captain doesn't support advanced body matching for form parameters
-    const wiremockBaseUrl =
-    Cypress.env('WIREMOCK_URL') || 'http://wiremock:8888';
+    const wiremockBaseUrl = getWiremockBaseUrl();
 
-    return cy
-        .request({
-            method: 'POST',
-            url: `${wiremockBaseUrl}/__admin/mappings`,
-            body: {
-                request: {
-                    method: 'POST',
-                    urlPath: '/google-mocked/oauth/token',
-                    bodyPatterns: [
-                        {contains: `code=${authCode}`},
-                        {contains: 'grant_type=authorization_code'}
-                    ]
+    return cy.request({
+        method: 'POST',
+        url: `${wiremockBaseUrl}/__admin/mappings`,
+        body: {
+            request: {
+                method: 'POST',
+                urlPath: '/google-mocked/oauth/token',
+                bodyPatterns: [
+                    {contains: `code=${authCode}`},
+                    {contains: 'grant_type=authorization_code'}
+                ]
+            },
+            response: {
+                status: 200,
+                jsonBody: {
+                    // eslint-disable-next-line camelcase
+                    access_token: 'mock-google-access-token',
+                    // eslint-disable-next-line camelcase
+                    token_type: 'Bearer',
+                    // eslint-disable-next-line camelcase
+                    expires_in: 3600,
+                    scope: 'profile email',
+                    // eslint-disable-next-line camelcase
+                    refresh_token: 'mock-google-refresh-token'
                 },
-                response: {
-                    status: 200,
-                    jsonBody: {
-                        // eslint-disable-next-line camelcase
-                        access_token: '',
-                        // eslint-disable-next-line camelcase
-                        token_type: 'Bearer',
-                        // eslint-disable-next-line camelcase
-                        expires_in: 3600,
-                        scope: 'profile email',
-                        // eslint-disable-next-line camelcase
-                        refresh_token: 'mock-refresh-token'
-                    },
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             }
-        })
-        .then(response => response.body);
+        }
+    }).then(response => response.body);
 }
 
-export function registerGoogleUserInfoMock(user: GoogleUser) {
+export function registerGoogleUserInfoMock(user: GoogleUser, customFields?: Record<string, string>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
+    cy.log(`Registering Google user info mock for user ${user.sub}`);
+    cy.log('custom fields: ', customFields || 'none');
 
     return cy.request({
         method: 'POST',
@@ -116,7 +113,9 @@ export function registerGoogleUserInfoMock(user: GoogleUser) {
                     email: user.email,
                     // eslint-disable-next-line camelcase
                     email_verified: user.emailVerified,
-                    picture: user.picture
+                    picture: user.picture,
+                    // Append custom fields if provided
+                    ...customFields
                 }
             }
         }
@@ -194,8 +193,11 @@ export function registerLinkedInOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerLinkedInUserInfoMocks(user: LinkedInUser) {
+export function registerLinkedInUserInfoMocks(user: LinkedInUser, customFields?: Record<string, string>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
+
+    cy.log(`Registering LinkedIn user info mock for user ${user.id}`);
+    cy.log('custom fields: ', customFields || 'none');
 
     // LinkedIn uses two separate endpoints
     // Note: Using Direct WireMock API instead of WireMock Captain because:
@@ -262,7 +264,9 @@ export function registerLinkedInUserInfoMocks(user: LinkedInUser) {
                                     ]
                                 }
                             }
-                        })
+                        }),
+                        // Append custom fields if provided
+                        ...customFields
                     }
                 }
             }
@@ -327,7 +331,7 @@ export function registerGitHubOauthTokenMock(authCode: string) {
                     // eslint-disable-next-line camelcase
                     access_token: 'mock-github-access-token',
                     // eslint-disable-next-line camelcase
-                    token_type: 'bearer',
+                    token_type: 'Bearer',
                     scope: 'user:email'
                 },
                 headers: {
@@ -338,8 +342,11 @@ export function registerGitHubOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerGitHubUserInfoMock(user: GitHubUser) {
+export function registerGitHubUserInfoMock(user: GitHubUser, customFields?: Record<string, string>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
+
+    cy.log(`Registering GitHub user info mock for user ${user.id}`);
+    cy.log('custom fields: ', customFields || 'none');
 
     return cy.request({
         method: 'POST',
@@ -359,7 +366,9 @@ export function registerGitHubUserInfoMock(user: GitHubUser) {
                     // eslint-disable-next-line camelcase
                     avatar_url: user.avatar_url,
                     ...(user.location && {location: user.location}),
-                    ...(user.bio && {bio: user.bio})
+                    ...(user.bio && {bio: user.bio}),
+                    // Append custom fields if provided
+                    ...customFields
                 }
             }
         }
@@ -423,7 +432,7 @@ export function registerFacebookOauthTokenMock(authCode: string) {
                     // eslint-disable-next-line camelcase
                     access_token: 'mock-facebook-access-token',
                     // eslint-disable-next-line camelcase
-                    token_type: 'bearer',
+                    token_type: 'Bearer',
                     // eslint-disable-next-line camelcase
                     expires_in: 5184000
                 },
@@ -435,8 +444,11 @@ export function registerFacebookOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerFacebookUserInfoMock(user: FacebookUser) {
+export function registerFacebookUserInfoMock(user: FacebookUser, customFields?: Record<string, string>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
+
+    cy.log(`Registering Facebook user info mock for user ${user.id}`);
+    cy.log('custom fields: ', customFields || 'none');
 
     return cy.request({
         method: 'POST',
@@ -456,7 +468,9 @@ export function registerFacebookUserInfoMock(user: FacebookUser) {
                     // eslint-disable-next-line camelcase
                     last_name: user.last_name,
                     email: user.email,
-                    ...(user.picture && {picture: user.picture})
+                    ...(user.picture && {picture: user.picture}),
+                    // Append custom fields if provided
+                    ...customFields
                 }
             }
         }

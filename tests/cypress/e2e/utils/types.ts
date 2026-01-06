@@ -7,9 +7,9 @@ export interface GoogleUser {
     sub: string;
     name: string;
     givenName: string;
-    familyName:string;
+    familyName: string;
     email: string;
-    emailVerified: boolean,
+    emailVerified: boolean;
     picture: string;
 }
 

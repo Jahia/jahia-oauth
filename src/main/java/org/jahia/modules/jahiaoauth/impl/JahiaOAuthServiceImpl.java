@@ -25,12 +25,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
-import org.jahia.modules.jahiaauth.service.ConnectorConfig;
-import org.jahia.modules.jahiaauth.service.ConnectorPropertyInfo;
-import org.jahia.modules.jahiaauth.service.ConnectorService;
-import org.jahia.modules.jahiaauth.service.JahiaAuthConstants;
-import org.jahia.modules.jahiaauth.service.JahiaAuthMapperService;
-import org.jahia.modules.jahiaauth.service.MapperConfig;
+import org.jahia.modules.jahiaauth.service.*;
 import org.jahia.modules.jahiaoauth.service.*;
 import org.jahia.modules.scribejava.apis.FranceConnectApi;
 import org.jahia.osgi.BundleUtils;
@@ -44,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +160,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
                     // Store in a simple map the results by properties as mapped in the connector
                     propertiesResult.putAll(getPropertiesResult(connectorService, responseJson));
+
+                    // Enhance properties with custom mapping that may be configured in mappers
+                    propertiesResult.putAll(getEnhancedPropertiesForMappers(propertiesResult, config, responseJson));
                 } catch (Exception e) {
                     logger.error("Did not received expected json, response message was: {} and response body was: {}",
                             response.getMessage(), response.getBody());
@@ -187,14 +186,6 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             // Get Mappers
             for (MapperConfig mapperConfig : config.getMappers()) {
                 if (mapperConfig.isActive()) {
-                    // Check that all props are found
-                    mapperConfig.getMappings().forEach(mapping -> {
-                        if (!propertiesResult.containsKey(mapping.getConnectorProperty())) {
-                            logger.warn(
-                                    "Connector property {} mapped to jcr property {} was not found in the received properties, please check your configuration",
-                                    mapping.getConnectorProperty(), mapping.getMappedProperty());
-                        }
-                    });
                     jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
                 }
             }
@@ -218,6 +209,69 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken());
         }
         return tokenData;
+    }
+
+    /**
+     * Iterates over mappers to find and extract properties that are available in the JSON response but weren't explicitly requested by the connector.
+     */
+    private Map<String, Object> getEnhancedPropertiesForMappers(Map<String, Object> propertiesResult, ConnectorConfig config,
+            JSONObject responseJson) {
+
+        Map<String, Object> enhancedProperties = new HashMap<>();
+        for (MapperConfig mapperConfig : config.getMappers()) {
+            if (mapperConfig.isActive()) {
+                mapperConfig.getMappings().forEach(mapping -> {
+                    Map.Entry<String, Object> entry = extractEnhancedPropertyEntryForMapping(propertiesResult, responseJson, mapping);
+                    if (entry != null) {
+                        Object previousValue = enhancedProperties.put(entry.getKey(), entry.getValue());
+                        if (previousValue != null) {
+                            logger.debug("Property '{}' got overwritten - old value: '{}', new value: '{}'", entry.getKey(), previousValue,
+                                    entry.getValue());
+                        }
+                    }
+                });
+            }
+        }
+        return enhancedProperties;
+    }
+
+    /**
+     * Extracts a single property for a mapping if it exists in the JSON response and hasn't been extracted yet.
+     * Only supports simple types (String, Number, Boolean).
+     */
+    private static Map.Entry<String, Object> extractEnhancedPropertyEntryForMapping(Map<String, Object> propertiesResult, JSONObject responseJson, Mapping mapping) {
+        String connectorProperty = mapping.getConnectorProperty();
+        logger.debug("Enhancing property '{}' requested by mapper", connectorProperty);
+
+        // Skip if already extracted via connector's availableProperties
+        if (propertiesResult.containsKey(connectorProperty)) {
+            logger.debug("Property '{}' already extracted via connector's availableProperties", connectorProperty);
+            return null;
+        }
+
+        // Try to find property in raw JSON properties
+        if (!responseJson.has(connectorProperty)) {
+            logger.debug("Property '{}' not found in JSON response", connectorProperty);
+            return null;
+        }
+
+        Object matchingProperty = responseJson.opt(connectorProperty);
+        if (JSONObject.NULL.equals(matchingProperty)) {
+            matchingProperty = null;
+        }
+
+        // Only extract simple types: String, Number (Integer, Long, Double), Boolean, or null
+        if (matchingProperty == null || matchingProperty instanceof String || matchingProperty instanceof Number
+                || matchingProperty instanceof Boolean) {
+            logger.debug("Property '{}' found in JSON response with value '{}'", connectorProperty, matchingProperty);
+            return new AbstractMap.SimpleEntry<>(connectorProperty, matchingProperty);
+        } else {
+            // Skip complex types (JSONObject, JSONArray, or any other unexpected types)
+            logger.warn(
+                    "Skipping non-simple property '{}' of type '{}' - use connector's availableProperties with valuePath for complex values",
+                    connectorProperty, matchingProperty.getClass().getSimpleName());
+            return null;
+        }
     }
 
     private Map<String, Object> getPropertiesResult(ConnectorService connectorService, JSONObject responseJson) throws JSONException {
@@ -255,7 +309,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONObject(Map<String, Object> propertiesResult, JSONObject jsonObject, String pathToProperty,
-            String propertyName) throws JSONException {
+                                               String propertyName) throws JSONException {
         if (StringUtils.startsWith(pathToProperty, "/")) {
 
             String key = StringUtils.substringAfter(pathToProperty, "/");
@@ -283,7 +337,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void addTokensData(String connectorServiceName, OAuth2AccessToken accessToken, Map<String, Object> propertiesResult,
-            String siteKey) {
+                               String siteKey) {
         // add token to result
         propertiesResult.put(JahiaOAuthConstants.TOKEN_DATA, extractAccessTokenData(accessToken));
         propertiesResult.put(JahiaAuthConstants.CONNECTOR_SERVICE_NAME, connectorServiceName);
@@ -292,7 +346,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     private void extractPropertyFromJSONArray(Map<String, Object> propertiesResult, JSONArray jsonArray, String pathToProperty,
-            String propertyName) throws JSONException {
+                                              String propertyName) throws JSONException {
         int arrayIndex = Integer.parseInt(StringUtils.substringBetween(pathToProperty, "[", "]"));
         pathToProperty = StringUtils.substringAfter(pathToProperty, "]");
         if (StringUtils.isBlank(pathToProperty) && jsonArray.length() >= arrayIndex) {
