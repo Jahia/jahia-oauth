@@ -70,3 +70,16 @@ jobs:
       provisioning_manifest: provisioning-manifest-build.yml
       artifact_prefix: oauth
       module_branch: ${{ github.ref }}
+
+  integration-tests-jahia-8_0_X:
+    uses:  Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    needs: build
+    secrets: inherit
+    with:
+      jahia_image: jahia/jahia-ee:8.0
+      module_id: jahia-oauth
+      should_skip_testrail: true
+      pagerduty_skip_notification: true
+      provisioning_manifest: provisioning-manifest-build.yml
+      artifact_prefix: oauth
+      module_branch: ${{ github.ref }}
