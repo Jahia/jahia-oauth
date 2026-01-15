@@ -1,9 +1,2 @@
-- addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
-- installBundle:
-    - 'mvn:org.jahia.modules/jahia-authentication'
-    - 'mvn:org.jahia.modules/jahia-oauth'
-    - 'mvn:org.jahia.modules/jcr-auth-provider'
-    - 'mvn:org.jahia.test/jahia-oauth-test-module'
-  autoStart: true
-  uninstallPreviousVersion: true
-- include: 'provisioning.yml'
+- include: 'dependencies.yml'
+- include: 'snapshots.yml'
