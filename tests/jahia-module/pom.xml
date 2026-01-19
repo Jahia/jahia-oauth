@@ -28,7 +28,7 @@
     <groupId>org.jahia.test</groupId>
     <artifactId>jahia-oauth-test-module</artifactId>
     <name>Test module for jahia-oauth</name>
-    <version>3.4.0</version>
+    <version>3.4.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
