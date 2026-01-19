@@ -1,0 +1,29 @@
+name: Nightly Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *'
+
+jobs:
+  integration-tests:
+    strategy:
+      matrix:
+        include:
+          - name: Release
+            jahia_image: jahia/jahia-ee:8
+            pagerduty_service: jahia-oauth-JahiaRL
+            provisioning_manifest: provisioning-manifest-snapshot.yml
+          - name: Snapshot
+            jahia_image: jahia/jahia-ee:8-SNAPSHOT
+            pagerduty_service: jahia-oauth-JahiaSN
+            provisioning_manifest: provisioning-manifest-snapshot.yml
+    uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
+    secrets: inherit
+    with:
+      jahia_image: ${{ matrix.jahia_image }}
+      module_id: jahia-oauth
+      testrail_project: Jahia OAuth
+      pagerduty_incident_service: ${{ matrix.pagerduty_service }}
+      provisioning_manifest: ${{ matrix.provisioning_manifest }}
+      artifact_prefix: oauth

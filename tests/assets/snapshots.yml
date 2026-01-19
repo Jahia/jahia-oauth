@@ -1,0 +1,6 @@
+- installModule:
+    # The range should match the current version of the module in the pom.xml
+    - 'mvn:org.jahia.modules/jahia-oauth/[2.0-SNAPSHOT,3.0-SNAPSHOT)'
+    - 'mvn:org.jahia.test/jahia-oauth-test-module/[2.0-SNAPSHOT,3.0-SNAPSHOT)'
+  autoStart: true
+  uninstallPreviousVersion: true
