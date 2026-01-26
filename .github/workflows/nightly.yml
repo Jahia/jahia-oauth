@@ -27,3 +27,4 @@ jobs:
       pagerduty_incident_service: ${{ matrix.pagerduty_service }}
       provisioning_manifest: ${{ matrix.provisioning_manifest }}
       artifact_prefix: oauth
+      module_branch: ${{ github.ref }}
