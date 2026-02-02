@@ -14,9 +14,11 @@ jobs:
             jahia_image: jahia/jahia-ee:8
             pagerduty_service: jahia-oauth-JahiaRL
             provisioning_manifest: provisioning-manifest-snapshot.yml
+            artifact_prefix: oauth-rl
           - name: Snapshot
             jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
             pagerduty_service: jahia-oauth-JahiaSN
+            artifact_prefix: oauth-sn
             provisioning_manifest: provisioning-manifest-snapshot.yml
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
     secrets: inherit
@@ -26,4 +28,5 @@ jobs:
       testrail_project: Jahia OAuth
       pagerduty_incident_service: ${{ matrix.pagerduty_service }}
       provisioning_manifest: ${{ matrix.provisioning_manifest }}
-      artifact_prefix: oauth
+      artifact_prefix: ${{ matrix.artifact_prefix }}
+      module_branch: ${{ github.ref }}
