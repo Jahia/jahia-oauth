@@ -80,10 +80,10 @@ public class CustomConnectorResultProcessor implements ConnectorResultProcessor 
         // This processor runs for every successful OAuth authentication (it is an OSGi service),
         // so connectors not configured with the $.nestedLevel.simpleArray mapping will have a
         // null simpleArray value — which must not cause a NullPointerException.
-        if (login instanceof String && simpleArray instanceof List) {
+        if (login != null && simpleArray instanceof List) {
             try {
                 jcrTemplate.doExecuteWithSystemSession(session -> {
-                    JCRUserNode user = jahiaUserManagerService.lookupUser((String) login, session);
+                    JCRUserNode user = jahiaUserManagerService.lookupUser(login.toString(), session);
                     String simpleArrayJoined = ((List<?>) simpleArray).stream().map(Object::toString).collect(Collectors.joining("_"));
                     user.setProperty("customProperty", simpleArrayJoined);
                     session.save();
