@@ -246,10 +246,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
      * the Jayway JsonPath library. Plain property names (no {@code $} prefix) fall back to a
      * top-level {@code has}/{@code opt} lookup.
      * <p>
-     * Only scalar types ({@code String}, {@code Number}, {@code Boolean}), {@code List}, and
-     * {@code null} are returned. Complex values ({@code JSONObject} or any other unexpected type)
-     * are skipped with a warning; use the connector's {@code availableProperties} with
-     * {@code valuePath} for those.
+     * All value types are returned as-is. Note that complex types (e.g. {@code JSONObject}) will
+     * be converted to their string representation by {@code JahiaAuthMapperServiceImpl.executeMapper}
+     * when stored in the cache; they are only usable as-is in a custom {@link ConnectorResultProcessor}.
      * <p>
      * Jayway note: filter expressions always return a list, even when only one node matches
      * (e.g. {@code $.groups[?(@.name == 'admin')]} returns {@code ["admin"]}, not {@code "admin"}).
@@ -289,18 +288,10 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             }
         }
 
-        // Only extract simple types: String, Number (Integer, Long, Double), Boolean, List or null
-        if (matchingProperty == null || matchingProperty instanceof String || matchingProperty instanceof Number
-                || matchingProperty instanceof Boolean || matchingProperty instanceof List) {
-            logger.debug("Property '{}' found in JSON response with value '{}'", connectorProperty, matchingProperty);
-            return new AbstractMap.SimpleEntry<>(connectorProperty, matchingProperty);
-        } else {
-            // Skip complex types (JSONObject, or any other unexpected types)
-            logger.warn(
-                    "Skipping non-simple property '{}' of type '{}' - use connector's availableProperties with valuePath for complex values",
-                    connectorProperty, matchingProperty.getClass().getSimpleName());
-            return null;
-        }
+        logger.debug("Property '{}' found in JSON response with value '{}'", connectorProperty, matchingProperty);
+        // NB: the complex types (JSONObject, or any other unexpected types) can only be used in a custom ConnectorResultProcessor
+        // in JahiaAuthMapperServiceImpl.executeMapper(...), the property result is stored in the cache as a string: String.valueOf(...)
+        return new AbstractMap.SimpleEntry<>(connectorProperty, matchingProperty);
     }
 
     /**
