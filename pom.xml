@@ -116,7 +116,7 @@
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.9.0</version>
+            <version>2.10.0</version>
             <exclusions>
                 <!-- slf4j-api is provided by the Jahia OSGi container (1.7.x).
                      Excluding the transitive 2.0.x pulled by json-path avoids a
