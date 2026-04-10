@@ -244,7 +244,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
      * <p>
      * Connector property values starting with {@code $} are evaluated as JSONPath expressions via
      * the Jayway JsonPath library. Plain property names (no {@code $} prefix) fall back to a
-     * top-level {@code has}/{@code opt} lookup and emit a deprecation warning.
+     * top-level {@code has}/{@code opt} lookup.
      * <p>
      * Only scalar types ({@code String}, {@code Number}, {@code Boolean}), {@code List}, and
      * {@code null} are returned. Complex values ({@code JSONObject} or any other unexpected type)
@@ -271,16 +271,14 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
         if (connectorProperty.startsWith("$")) {
             // RFC 9535 JSONPath expression
+            logger.debug("Evaluating the connector property {} as a JSONPath expression", connectorProperty);
             matchingProperty = evaluateJsonPath(responseJson, connectorProperty);
             if (matchingProperty == null) {
                 logger.debug("JSONPath expression '{}' returned no result in JSON response", connectorProperty);
                 return null;
             }
         } else {
-            // Legacy: plain top-level property name — deprecated
-            logger.warn("Connector property '{}' does not use JSONPath syntax (RFC 9535). "
-                    + "This syntax is deprecated and will be removed in the next major release. "
-                    + "Please switch to JSONPath syntax instead (e.g. '$.{}').", connectorProperty, connectorProperty);
+            logger.debug("Evaluating the connector property {} as a plain property name lookup", connectorProperty);
             if (!responseJson.has(connectorProperty)) {
                 logger.debug("Property '{}' not found in JSON response", connectorProperty);
                 return null;
