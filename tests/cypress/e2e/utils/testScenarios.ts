@@ -63,9 +63,9 @@ export interface OAuthConnectorTestConfig<TUser> {
     siteKey: string;
     registerAuthorizeMock: (siteKey: string, credentials: ClientCredentials, authCode: string) => Cypress.Chainable;
     registerTokenMock: (authCode: string) => Cypress.Chainable;
-    registerUserInfoMock: (user: TUser, customFields?: Record<string, string>) => Cypress.Chainable;
+    registerUserInfoMock: (user: TUser, customFields?: Record<string, unknown>) => Cypress.Chainable;
     expectedUserFields: ExpectedUserFields; // Fields to validate after authentication - supports both predefined and custom fields
-    customFields?: Record<string, string>; // Custom fields to pass to registerUserInfoMock
+    customFields?: Record<string, unknown>; // Custom fields to pass to registerUserInfoMock
 }
 
 /**
