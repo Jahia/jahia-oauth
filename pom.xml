@@ -45,7 +45,7 @@
         <jahia-static-resources>/css,/images,/javascript,/icons</jahia-static-resources>
         <require-capability>org.jahia.license;filter:="(key=org.jahia.oauthConnector)"</require-capability>
         <jahia-key>org.jahia.oauthConnector</jahia-key>
-        <jahia-module-signature>MCwCFAYwKooy2abRYAmHAxYjjkIYCZ0jAhRc1fP4hGMk2VCOYEftmr3z7Ei3jw==</jahia-module-signature>
+        <jahia-module-signature>MCwCFFy4SJGi8CBcBn4M7PPKXbK1+gDpAhRqHzcwydAfaLraFaFTv26AYvBTRA==</jahia-module-signature>
         <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
         <sonar.sources>src/main/resources/javascript</sonar.sources>
     </properties>
