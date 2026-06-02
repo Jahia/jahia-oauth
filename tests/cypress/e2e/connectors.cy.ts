@@ -53,7 +53,7 @@ interface ConnectorConfig<TUser> {
     userGenerator: () => TUser;
     registerAuthorizeMock: (siteKey: string, credentials: ClientCredentials, authCode: string) => Cypress.Chainable;
     registerTokenMock: (authCode: string) => Cypress.Chainable;
-    registerUserInfoMock: (user: TUser, customFields?: Record<string, string>) => Cypress.Chainable;
+    registerUserInfoMock: (user: TUser, customFields?: Record<string, unknown>) => Cypress.Chainable;
     expectedFieldsMapper: (user: TUser) => Record<string, string>;
 }
 
@@ -231,28 +231,153 @@ connectors.forEach(connector => {
             testSuccessfulAuthentication(config);
         });
 
-        it('Should display user details and the custom fields when successfully authenticated', () => {
-            // Configure additional custom fields
-            const customFields = {
-                customField: faker.lorem.word(),
-                otherField: faker.lorem.word()
+        const mappingFields = [
+            {name: 'dot notation - deprecated', customField: 'customField', otherField: 'otherField'},
+            {name: 'RFC 9535 notation', customField: '$.customField', otherField: '$.otherField'}
+        ];
+        mappingFields.forEach(mapping => {
+            it(`Should display user details and the custom fields (mapped with ${mapping.name}) when successfully authenticated`, () => {
+                // Configure additional custom fields
+                const customFields = {
+                    customField: faker.lorem.word(),
+                    otherField: faker.lorem.word()
+                };
+
+                // Create custom mapping: customField -> j:organization, otherField -> j:twitterID
+                const customMapping = [
+                    {
+                        connector: {valueType: 'string', name: mapping.customField},
+                        editable: false,
+                        mapper: {
+                            valueType: 'string',
+                            name: 'j:organization',
+                            mandatory: false
+                        }
+                    },
+                    {
+                        connector: {valueType: 'string', name: mapping.otherField},
+                        editable: false,
+                        mapper: {
+                            valueType: 'string',
+                            name: 'j:twitterID',
+                            mandatory: false
+                        }
+                    }
+                ];
+
+                // Re-configure the connector with custom mapping
+                connector.configurator(siteKey, clientCredentials, customMapping);
+
+                const config: OAuthConnectorTestConfig<OAuthUser> = {
+                    connectorName: connector.name,
+                    pageUrl: `/sites/${siteKey}/${connector.name.toLowerCase()}.html`,
+                    buttonSelector: connector.buttonSelector,
+                    credentials: clientCredentials,
+                    user: user,
+                    authCode: authCode,
+                    siteKey: siteKey,
+                    registerAuthorizeMock: connector.registerAuthorizeMock,
+                    registerTokenMock: connector.registerTokenMock,
+                    registerUserInfoMock: connector.registerUserInfoMock,
+                    expectedUserFields: {
+                        ...connector.expectedFieldsMapper(user),
+                        // Custom fields mapped to predefined properties
+                        organization: customFields.customField,
+                        twitterID: customFields.otherField
+                    },
+                    customFields: customFields
+                };
+
+                cy.logout();
+                testSuccessfulAuthentication(config);
+            });
+        });
+
+        it('Should display user details and the custom nested fields (defined using RFC 9535-compliant syntax / Jayway) when successfully authenticated', () => {
+            // Demonstrates mapping scenarios using RFC 9535 syntax:
+            //   - $.nestedLevel.simpleField -> simple nested field access
+            //   - $.nestedLevel.simpleArray -> array access
+            //   - $.nestedLevel.complexFiltering[?(@.code =~ /ABC-[0-9]+/ && @.category == 'bar')].name -> advanced filtering
+            //
+            // Note: Jayway is not a strict RFC 9535 implementation. The spec's match() and
+            // search() filter functions are not supported; use the =~ operator instead.
+            // String values in filter predicates must use single quotes.
+
+            const simpleField = faker.string.uuid();
+            const simpleArrayWord1 = faker.lorem.word();
+            const simpleArrayWord2 = faker.lorem.word();
+            const name1 = faker.lorem.slug();
+            const name2 = faker.lorem.slug();
+            const name3 = faker.lorem.slug();
+            const customNestedFields = {
+                nestedLevel: {
+                    simpleField: simpleField,
+                    simpleArray: [simpleArrayWord1, simpleArrayWord2],
+                    complexFiltering: [
+                        {
+                            name: name1,
+                            category: 'foo',
+                            code: `ABC-${faker.number.int({min: 100, max: 999})}`
+                        },
+                        {
+                            name: name2,
+                            category: 'bar',
+                            code: `DEF-${faker.number.int({min: 100, max: 999})}`
+                        },
+                        {
+                            name: name3,
+                            category: 'bar',
+                            code: `ABC-${faker.number.int({min: 100, max: 999})}`
+                        }
+                    ]
+                }
             };
 
-            // Create custom mapping: customField -> j:organization, otherField -> j:twitterID
             const customMapping = [
                 {
-                    connector: {valueType: 'string', name: 'customField'},
+                    connector: {
+                        valueType: 'string',
+                        name: '$.nestedLevel.simpleField'
+                    },
                     editable: false,
-                    mapper: {valueType: 'string', name: 'j:organization', mandatory: false}
+                    mapper: {
+                        valueType: 'string',
+                        name: 'j:organization',
+                        mandatory: false
+                    }
                 },
                 {
-                    connector: {valueType: 'string', name: 'otherField'},
+                // This field is then used in CustomConnectorResultProcessor for custom manipulation
+                // NB: the property this field is mapped to (j:skypeID in this example) MUST be defined in the `mappings` field of `org.jahia.modules.jcroauthprovider.impl.JCROAuthProviderMapperImpl.cfg`!
+                    connector: {
+                        valueType: 'string',
+                        name: '$.nestedLevel.simpleArray'
+                    },
                     editable: false,
-                    mapper: {valueType: 'string', name: 'j:twitterID', mandatory: false}
+                    mapper: {
+                        valueType: 'string',
+                        name: 'j:skypeID',
+                        mandatory: false
+                    }
+                },
+                {
+                // Compound filter: regex on code AND equality on category — only name3 matches.
+                // Jayway always returns a nodelist for filter expressions, so even a single match
+                // produces a one-element list. The mapper layer serialises it as a JSON array string
+                // (["name3"]), consistent with multi-element results (see simpleArray / j:skypeID above).
+                    connector: {
+                        valueType: 'string',
+                        name: '$.nestedLevel.complexFiltering[?(@.code =~ /ABC-[0-9]+/ && @.category == \'bar\')].name'
+                    },
+                    editable: false,
+                    mapper: {
+                        valueType: 'string',
+                        name: 'j:twitterID',
+                        mandatory: false
+                    }
                 }
             ];
 
-            // Re-configure the connector with custom mapping
             connector.configurator(siteKey, clientCredentials, customMapping);
 
             const config: OAuthConnectorTestConfig<OAuthUser> = {
@@ -268,11 +393,12 @@ connectors.forEach(connector => {
                 registerUserInfoMock: connector.registerUserInfoMock,
                 expectedUserFields: {
                     ...connector.expectedFieldsMapper(user),
-                    // Custom fields mapped to predefined properties
-                    organization: customFields.customField,
-                    twitterID: customFields.otherField
+                    organization: simpleField,
+                    customProperty: simpleArrayWord1 + '_' + simpleArrayWord2, // CustomConnectorResultProcessor joins the values with a "_"
+                    skypeID: '["' + simpleArrayWord1 + '","' + simpleArrayWord2 + '"]',
+                    twitterID: '["' + name3 + '"]'
                 },
-                customFields: customFields
+                customFields: customNestedFields
             };
 
             cy.logout();

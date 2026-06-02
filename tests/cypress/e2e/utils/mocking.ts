@@ -88,7 +88,7 @@ export function registerGoogleOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerGoogleUserInfoMock(user: GoogleUser, customFields?: Record<string, string>) {
+export function registerGoogleUserInfoMock(user: GoogleUser, customFields?: Record<string, unknown>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
     cy.log(`Registering Google user info mock for user ${user.sub}`);
     cy.log('custom fields: ', customFields || 'none');
@@ -193,7 +193,7 @@ export function registerLinkedInOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerLinkedInUserInfoMocks(user: LinkedInUser, customFields?: Record<string, string>) {
+export function registerLinkedInUserInfoMocks(user: LinkedInUser, customFields?: Record<string, unknown>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
 
     cy.log(`Registering LinkedIn user info mock for user ${user.id}`);
@@ -342,7 +342,7 @@ export function registerGitHubOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerGitHubUserInfoMock(user: GitHubUser, customFields?: Record<string, string>) {
+export function registerGitHubUserInfoMock(user: GitHubUser, customFields?: Record<string, unknown>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
 
     cy.log(`Registering GitHub user info mock for user ${user.id}`);
@@ -444,7 +444,7 @@ export function registerFacebookOauthTokenMock(authCode: string) {
     }).then(response => response.body);
 }
 
-export function registerFacebookUserInfoMock(user: FacebookUser, customFields?: Record<string, string>) {
+export function registerFacebookUserInfoMock(user: FacebookUser, customFields?: Record<string, unknown>) {
     const wiremockBaseUrl = getWiremockBaseUrl();
 
     cy.log(`Registering Facebook user info mock for user ${user.id}`);

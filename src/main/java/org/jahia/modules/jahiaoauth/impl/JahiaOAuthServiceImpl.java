@@ -24,6 +24,8 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaauth.service.*;
 import org.jahia.modules.jahiaoauth.service.*;
@@ -54,6 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component(service = JahiaOAuthService.class, immediate = true)
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
+    private static final Configuration JSONPATH_CONFIG = Configuration.builder().build();
 
     private final Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map;
 
@@ -236,8 +239,22 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     /**
-     * Extracts a single property for a mapping if it exists in the JSON response and hasn't been extracted yet.
-     * Only supports simple types (String, Number, Boolean).
+     * Extracts a single property for a mapping if it is present in the JSON response and has not
+     * already been extracted via the connector's {@code availableProperties}.
+     * <p>
+     * Connector property values starting with {@code $} are evaluated as JSONPath expressions via
+     * the Jayway JsonPath library. Plain property names (no {@code $} prefix) fall back to a
+     * top-level {@code has}/{@code opt} lookup.
+     * <p>
+     * All value types are returned as-is. Note that complex types (e.g. {@code JSONObject}) will
+     * be converted to their string representation by {@code JahiaAuthMapperServiceImpl.executeMapper}
+     * when stored in the cache; they are only usable as-is in a custom {@link ConnectorResultProcessor}.
+     * <p>
+     * Jayway note: filter expressions always return a list, even when only one node matches
+     * (e.g. {@code $.groups[?(@.name == 'admin')]} returns {@code ["admin"]}, not {@code "admin"}).
+     * Additionally, chaining an index selector after a filter — e.g. {@code [?(@.x == 'y')][1]} —
+     * does <em>not</em> index into the filtered nodelist; {@code [1]} is applied to each matched
+     * node individually and produces nothing since matched nodes are objects, not arrays.
      */
     private static Map.Entry<String, Object> extractEnhancedPropertyEntryForMapping(Map<String, Object> propertiesResult, JSONObject responseJson, Mapping mapping) {
         String connectorProperty = mapping.getConnectorProperty();
@@ -249,27 +266,44 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             return null;
         }
 
-        // Try to find property in raw JSON properties
-        if (!responseJson.has(connectorProperty)) {
-            logger.debug("Property '{}' not found in JSON response", connectorProperty);
-            return null;
-        }
+        Object matchingProperty;
 
-        Object matchingProperty = responseJson.opt(connectorProperty);
-        if (JSONObject.NULL.equals(matchingProperty)) {
-            matchingProperty = null;
-        }
-
-        // Only extract simple types: String, Number (Integer, Long, Double), Boolean, or null
-        if (matchingProperty == null || matchingProperty instanceof String || matchingProperty instanceof Number
-                || matchingProperty instanceof Boolean) {
-            logger.debug("Property '{}' found in JSON response with value '{}'", connectorProperty, matchingProperty);
-            return new AbstractMap.SimpleEntry<>(connectorProperty, matchingProperty);
+        if (connectorProperty.startsWith("$")) {
+            // RFC 9535 JSONPath expression
+            logger.debug("Evaluating the connector property {} as a JSONPath expression", connectorProperty);
+            matchingProperty = evaluateJsonPath(responseJson, connectorProperty);
+            if (matchingProperty == null) {
+                logger.debug("JSONPath expression '{}' returned no result in JSON response", connectorProperty);
+                return null;
+            }
         } else {
-            // Skip complex types (JSONObject, JSONArray, or any other unexpected types)
-            logger.warn(
-                    "Skipping non-simple property '{}' of type '{}' - use connector's availableProperties with valuePath for complex values",
-                    connectorProperty, matchingProperty.getClass().getSimpleName());
+            logger.debug("Evaluating the connector property {} as a plain property name lookup", connectorProperty);
+            if (!responseJson.has(connectorProperty)) {
+                logger.debug("Property '{}' not found in JSON response", connectorProperty);
+                return null;
+            }
+            matchingProperty = responseJson.opt(connectorProperty);
+            if (JSONObject.NULL.equals(matchingProperty)) {
+                matchingProperty = null;
+            }
+        }
+
+        logger.debug("Property '{}' found in JSON response with value '{}'", connectorProperty, matchingProperty);
+        // NB: the complex types (JSONObject, or any other unexpected types) can only be used in a custom ConnectorResultProcessor
+        // in JahiaAuthMapperServiceImpl.executeMapper(...), the property result is stored in the cache as a string: String.valueOf(...)
+        return new AbstractMap.SimpleEntry<>(connectorProperty, matchingProperty);
+    }
+
+    /**
+     * Evaluates a JSONPath expression (RFC 9535) against the given JSON object.
+     * Returns {@code null} if the path does not exist or evaluation fails.
+     */
+    private static Object evaluateJsonPath(JSONObject responseJson, String jsonPathExpression) {
+        try {
+            return JsonPath.using(JSONPATH_CONFIG).parse(responseJson.toString()).read(jsonPathExpression);
+        } catch (Exception e) {
+            logger.warn("Failed to evaluate JSONPath expression '{}': {}", jsonPathExpression, e.getMessage());
+            logger.debug("Stacktrace", e);
             return null;
         }
     }
