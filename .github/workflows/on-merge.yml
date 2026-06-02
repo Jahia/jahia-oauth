@@ -6,9 +6,9 @@ name: On merge to master
 on:
   push:
     branches:
-      - 'master'
+      - "master"
     tags-ignore:
-      - '**'
+      - "**"
 
 jobs:
   update-signature:
@@ -31,7 +31,7 @@ jobs:
       NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
     container:
-      image: ghcr.io/jahia/jahia-docker-mvn-cache:8-jdk-noble-mvn-loaded
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:11-jdk-noble-mvn-loaded
       credentials:
         username: ${{ secrets.GH_PACKAGES_USERNAME }}
         password: ${{ secrets.GH_PACKAGES_TOKEN }}
@@ -40,7 +40,7 @@ jobs:
       - uses: jahia/jahia-modules-action/build@v2
         with:
           module_id: jahia-oauth
-          mvn_settings_filepath: '.github/maven.settings.xml'
+          mvn_settings_filepath: ".github/maven.settings.xml"
 
   sbom:
     name: SBOM processing
@@ -53,7 +53,7 @@ jobs:
         with:
           dependencytrack_hostname: ${{ vars.DEPENDENCYTRACK_HOSTNAME }}
           dependencytrack_apikey: ${{ secrets.DEPENDENCYTRACK_APIKEY }}
-          sbom_artifacts: 'build-artifacts'
+          sbom_artifacts: "build-artifacts"
 
   publish:
     name: Publish module
@@ -63,7 +63,7 @@ jobs:
     env:
       NEXUS_INTERNAL_URL: https://devtools.jahia.com/nexus/content/groups/internal/
     container:
-      image: ghcr.io/jahia/jahia-docker-mvn-cache:8-jdk-noble-mvn-loaded
+      image: ghcr.io/jahia/jahia-docker-mvn-cache:11-jdk-noble-mvn-loaded
       credentials:
         username: ${{ secrets.GH_PACKAGES_USERNAME }}
         password: ${{ secrets.GH_PACKAGES_TOKEN }}
@@ -73,4 +73,4 @@ jobs:
         with:
           nexus_username: ${{ secrets.NEXUS_USERNAME }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
-          mvn_settings_filepath: '.github/maven.settings.xml'
+          mvn_settings_filepath: ".github/maven.settings.xml"
