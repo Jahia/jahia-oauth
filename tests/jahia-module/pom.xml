@@ -22,18 +22,17 @@
     <parent>
         <artifactId>jahia-modules</artifactId>
         <groupId>org.jahia.modules</groupId>
-        <version>8.0.1.0</version>
+        <version>8.2.3.0</version>
         <relativePath />
     </parent>
     <groupId>org.jahia.test</groupId>
     <artifactId>jahia-oauth-test-module</artifactId>
     <name>Test module for jahia-oauth</name>
-    <version>4.1.0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
         <jahia-depends>jahia-oauth</jahia-depends>
-        <jahia.plugin.version>6.9</jahia.plugin.version>
     </properties>
 
     <dependencies>
@@ -46,7 +45,7 @@
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>jahia-authentication</artifactId>
-            <version>1.7.0</version>
+            <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
