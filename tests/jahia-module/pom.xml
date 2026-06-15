@@ -35,6 +35,17 @@
         <jahia-depends>jahia-oauth</jahia-depends>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>oauth-releases</id>
+            <url>https://devtools.jahia.com/nexus/content/repositories/oauth-releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>oauth-snapshots</id>
+            <url>https://devtools.jahia.com/nexus/content/repositories/oauth-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.jahia.modules</groupId>
@@ -75,6 +86,32 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>oauth-snapshots</id>
+            <name>Jahia OAuth Snapshots</name>
+            <url>https://devtools.jahia.com/nexus/content/repositories/oauth-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>oauth-releases</id>
+            <name>Jahia OAuth Releases</name>
+            <url>https://devtools.jahia.com/nexus/content/repositories/oauth-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>        
     </repositories>
 
     <build>
