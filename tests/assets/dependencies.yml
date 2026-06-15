@@ -2,7 +2,7 @@
 # must use the deprecated 'installBundle' command while the target Jahia version is < 8.2.3.0 (where the 'installModule' command got added)
 - installBundle:
     # The range should include the jahia-authentication version defined in the pom.xml
-    - 'mvn:org.jahia.modules/jahia-authentication/[1.7,2.0-SNAPSHOT)'
+    - 'mvn:org.jahia.modules/jahia-authentication/[2.0-SNAPSHOT,3.0-SNAPSHOT)'    
     # Use the version range of jcr-auth-provider compatible with the jahia-authentication version above
     - 'mvn:org.jahia.modules/jcr-auth-provider/[3.0-SNAPSHOT,4.0-SNAPSHOT)'
   autoStart: true
