@@ -27,6 +27,8 @@ public class JahiaOAuthConstants {
     public static final String PROPERTY_SCOPE = "scope";
 
     public static final String STATE = "state";
+    /** Session attribute holding the single-use OAuth {@code state} issued at initiation, verified on callback. */
+    public static final String SESSION_OAUTH_STATE = "org.jahia.modules.jahiaoauth.state";
     public static final String TOKEN_DATA = "tokenData";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String TOKEN_EXPIRES_IN = "expiresIn";

@@ -29,6 +29,8 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +38,8 @@ import java.util.Map;
  * @author dgaillard
  */
 public class ConnectToOAuthProvider extends Action {
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private SettingsService settingsService;
     private JahiaOAuthService jahiaOAuthService;
     private String connectorName;
@@ -45,11 +49,16 @@ public class ConnectToOAuthProvider extends Action {
     public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session,
             Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
 
-        final String sessionId = req.getSession().getId();
+        // Issue an unpredictable, single-use state value and bind it to the server-side session
+        // (RFC 6749 §10.12), rather than deriving the state from the session id. OAuthCallback checks
+        // and consumes it; the mapper cache there remains keyed by the session id, so the SSO flow is
+        // unchanged.
+        final String state = new BigInteger(130, SECURE_RANDOM).toString(32);
+        req.getSession().setAttribute(JahiaOAuthConstants.SESSION_OAUTH_STATE, state);
 
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
+        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, state, getAdditionalParams());
         JSONObject response = new JSONObject();
         response.put(JahiaOAuthConstants.AUTHORIZATION_URL, authorizationUrl);
         return new ActionResult(HttpServletResponse.SC_OK, null, response);
