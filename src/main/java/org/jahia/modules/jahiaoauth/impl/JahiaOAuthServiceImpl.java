@@ -27,6 +27,9 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang.StringUtils;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
 import org.jahia.modules.jahiaauth.service.*;
 import org.jahia.modules.jahiaoauth.service.*;
 import org.jahia.modules.scribejava.apis.FranceConnectApi;
@@ -130,10 +133,21 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
-    @SuppressWarnings("java:S3776")
     public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception {
+        extractAccessTokenAndExecuteMappers(config, token, state, null);
+    }
+
+    @Override
+    @SuppressWarnings("java:S3776")
+    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state, String expectedNonce) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
+
+        // OpenID Connect: when a nonce was issued at initiation, the returned id_token must carry the
+        // same value (OpenID Connect Core §3.1.3.7). Verified here before the identity is used.
+        if (expectedNonce != null) {
+            verifyIdTokenNonce(accessToken, expectedNonce);
+        }
 
         OAuthConnectorService connectorService = BundleUtils.getOsgiService(OAuthConnectorService.class,
                 "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
@@ -197,6 +211,31 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             jahiaAuthMapperService.executeConnectorResultProcessors(config, propertiesResult);
         } catch (Exception e) {
             throw new JahiaOAuthException("Something when wrong in OAuth with config " + config.getConnectorName(), e);
+        }
+    }
+
+    private void verifyIdTokenNonce(OAuth2AccessToken accessToken, String expectedNonce) throws JahiaOAuthException {
+        if (!(accessToken instanceof OpenIdOAuth2AccessToken)) {
+            throw new JahiaOAuthException("A nonce was issued for this flow but the provider returned no OpenID Connect id_token to verify it against");
+        }
+        String idToken = ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken();
+        if (StringUtils.isBlank(idToken)) {
+            throw new JahiaOAuthException("A nonce was issued for this flow but the id_token is missing; cannot verify the nonce");
+        }
+        String[] parts = idToken.split("\\.");
+        if (parts.length < 2) {
+            throw new JahiaOAuthException("Malformed id_token; cannot verify the nonce");
+        }
+        String actualNonce;
+        try {
+            String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+            actualNonce = new JSONObject(payloadJson).optString(JahiaOAuthConstants.NONCE, null);
+        } catch (RuntimeException e) {
+            throw new JahiaOAuthException("Could not read the nonce claim from the id_token", e);
+        }
+        if (actualNonce == null || !MessageDigest.isEqual(
+                actualNonce.getBytes(StandardCharsets.UTF_8), expectedNonce.getBytes(StandardCharsets.UTF_8))) {
+            throw new JahiaOAuthException("The id_token nonce does not match the value sent in the authorization request");
         }
     }
 

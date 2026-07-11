@@ -68,10 +68,14 @@ public class OAuthCallback extends Action {
             }
             String siteKey = renderContext.getSite().getSiteKey();
             ConnectorConfig oauthConfig = settingsService.getConnectorConfig(siteKey, connectorName);
+            final Object expectedNonce = req.getSession().getAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE);
+            req.getSession().removeAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE);
             try {
                 // The mapper cache is keyed by the session id (consumed by the SSO valve), decoupled
-                // from the state value above.
-                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, req.getSession().getId());
+                // from the state value above. When an OIDC nonce was issued it is verified against the
+                // returned id_token.
+                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, req.getSession().getId(),
+                        expectedNonce != null ? expectedNonce.toString() : null);
                 isAuthenticate = true;
             } catch (Exception ex) {
                 logger.error("Could not authenticate user", ex);

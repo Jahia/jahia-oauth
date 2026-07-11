@@ -29,6 +29,9 @@ public class JahiaOAuthConstants {
     public static final String STATE = "state";
     /** Session attribute holding the single-use OAuth {@code state} issued at initiation, verified on callback. */
     public static final String SESSION_OAUTH_STATE = "org.jahia.modules.jahiaoauth.state";
+    /** Session attribute holding the OIDC {@code nonce} sent at initiation, verified against the id_token on callback. */
+    public static final String SESSION_OAUTH_NONCE = "org.jahia.modules.jahiaoauth.nonce";
+    public static final String NONCE = "nonce";
     public static final String TOKEN_DATA = "tokenData";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String TOKEN_EXPIRES_IN = "expiresIn";

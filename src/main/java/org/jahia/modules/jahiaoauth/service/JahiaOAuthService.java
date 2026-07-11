@@ -51,10 +51,22 @@ public interface JahiaOAuthService {
      *
      * @param config The oauth config for the connector
      * @param token  String token send by the OAuth API
-     * @param state  String state send back by OAuth API in this context it's the user session ID
+     * @param state  String cache key linking the result to the initiating session (the session id)
      * @throws Exception
      */
     void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
+
+    /**
+     * Same as {@link #extractAccessTokenAndExecuteMappers(ConnectorConfig, String, String)}, additionally
+     * verifying that the returned OIDC id_token carries the {@code nonce} sent in the authorization request.
+     *
+     * @param config        The oauth config for the connector
+     * @param token         String token send by the OAuth API
+     * @param state         String cache key linking the result to the initiating session (the session id)
+     * @param expectedNonce The nonce issued at initiation, or {@code null} to skip the check (non-OIDC flow)
+     * @throws Exception if the token exchange fails or the id_token nonce does not match
+     */
+    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state, String expectedNonce) throws Exception;
 
     /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication

@@ -58,7 +58,14 @@ public class ConnectToOAuthProvider extends Action {
 
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, state, getAdditionalParams());
+        // When an OIDC nonce is included in the authorization request, bind it to the session so the
+        // callback can verify the id_token carries the same value (OpenID Connect Core §3.1.2.1).
+        Map<String, String> additionalParams = getAdditionalParams();
+        if (additionalParams != null && additionalParams.containsKey(JahiaOAuthConstants.NONCE)) {
+            req.getSession().setAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE, additionalParams.get(JahiaOAuthConstants.NONCE));
+        }
+
+        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, state, additionalParams);
         JSONObject response = new JSONObject();
         response.put(JahiaOAuthConstants.AUTHORIZATION_URL, authorizationUrl);
         return new ActionResult(HttpServletResponse.SC_OK, null, response);
