@@ -49,21 +49,18 @@ public class ConnectToOAuthProvider extends Action {
     public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session,
             Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
 
-        // Issue an unpredictable, single-use state value and bind it to the server-side session
-        // (RFC 6749 §10.12), rather than deriving the state from the session id. OAuthCallback checks
-        // and consumes it; the mapper cache there remains keyed by the session id, so the SSO flow is
-        // unchanged.
+        // Issue an unpredictable, single-use state value instead of deriving it from the session id
+        // (RFC 6749 §10.12). Bind the state (and the OIDC nonce, if any) to the initiating session id in
+        // a cluster-wide store, so the callback can recover and verify them without depending on the HTTP
+        // session being available on the callback's node. OAuthCallback consumes and checks the state; the
+        // mapper cache there is keyed by the recovered session id, so the SSO flow is unchanged.
         final String state = new BigInteger(130, SECURE_RANDOM).toString(32);
-        req.getSession().setAttribute(JahiaOAuthConstants.SESSION_OAUTH_STATE, state);
 
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        // When an OIDC nonce is included in the authorization request, bind it to the session so the
-        // callback can verify the id_token carries the same value (OpenID Connect Core §3.1.2.1).
         Map<String, String> additionalParams = getAdditionalParams();
-        if (additionalParams != null && additionalParams.containsKey(JahiaOAuthConstants.NONCE)) {
-            req.getSession().setAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE, additionalParams.get(JahiaOAuthConstants.NONCE));
-        }
+        String nonce = additionalParams != null ? additionalParams.get(JahiaOAuthConstants.NONCE) : null;
+        jahiaOAuthService.cacheAuthorizationFlowState(state, req.getSession().getId(), nonce);
 
         String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, state, additionalParams);
         JSONObject response = new JSONObject();

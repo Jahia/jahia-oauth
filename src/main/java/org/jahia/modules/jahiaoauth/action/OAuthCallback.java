@@ -22,6 +22,7 @@ import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 import org.jahia.modules.jahiaauth.service.SettingsService;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.jahia.modules.jahiaoauth.service.JahiaOAuthService;
+import org.jahia.modules.jahiaoauth.service.OAuthFlowState;
 import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.render.RenderContext;
 import org.jahia.services.render.Resource;
@@ -31,8 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 
@@ -57,25 +56,21 @@ public class OAuthCallback extends Action {
             if (StringUtils.isBlank(token) || StringUtils.isBlank(state)) {
                 return ActionResult.BAD_REQUEST;
             }
-            // Verify the returned state matches the single-use value issued for this session at
-            // initiation, then consume it (RFC 6749 §10.12). Constant-time comparison.
-            final Object expectedState = req.getSession().getAttribute(JahiaOAuthConstants.SESSION_OAUTH_STATE);
-            req.getSession().removeAttribute(JahiaOAuthConstants.SESSION_OAUTH_STATE);
-            if (expectedState == null || !MessageDigest.isEqual(
-                    expectedState.toString().getBytes(StandardCharsets.UTF_8), state.getBytes(StandardCharsets.UTF_8))) {
-                logger.warn("OAuth callback rejected: state parameter does not match the value issued for this session");
+            // Recover and consume the flow state bound to this state token at initiation (cluster-wide
+            // store). A missing entry means the state is unknown, already used or expired -> reject
+            // (RFC 6749 §10.12). This does not rely on the HTTP session being present on this node.
+            OAuthFlowState flowState = jahiaOAuthService.consumeAuthorizationFlowState(state);
+            if (flowState == null) {
+                logger.warn("OAuth callback rejected: unknown, already-used or expired state");
                 return ActionResult.BAD_REQUEST;
             }
             String siteKey = renderContext.getSite().getSiteKey();
             ConnectorConfig oauthConfig = settingsService.getConnectorConfig(siteKey, connectorName);
-            final Object expectedNonce = req.getSession().getAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE);
-            req.getSession().removeAttribute(JahiaOAuthConstants.SESSION_OAUTH_NONCE);
             try {
-                // The mapper cache is keyed by the session id (consumed by the SSO valve), decoupled
-                // from the state value above. When an OIDC nonce was issued it is verified against the
-                // returned id_token.
-                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, req.getSession().getId(),
-                        expectedNonce != null ? expectedNonce.toString() : null);
+                // The mapper cache is keyed by the initiating session id recovered from the flow state
+                // (consumed by the SSO valve). The OIDC nonce (if any) is verified against the id_token.
+                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token,
+                        flowState.getSessionId(), flowState.getNonce());
                 isAuthenticate = true;
             } catch (Exception ex) {
                 logger.error("Could not authenticate user", ex);

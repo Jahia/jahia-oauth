@@ -69,6 +69,26 @@ public interface JahiaOAuthService {
     void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state, String expectedNonce) throws Exception;
 
     /**
+     * Bind an unpredictable authorization-flow {@code state} token to the initiating session id (and an
+     * optional OIDC nonce) in a cluster-wide, short-lived store. The callback recovers these via
+     * {@link #consumeAuthorizationFlowState(String)} without relying on the HTTP session being available
+     * on the callback's node.
+     *
+     * @param state     the single-use state token sent in the authorization request
+     * @param sessionId the id of the session initiating the flow (used later as the mapper-cache key)
+     * @param nonce     the OIDC nonce sent in the authorization request, or {@code null}
+     */
+    void cacheAuthorizationFlowState(String state, String sessionId, String nonce);
+
+    /**
+     * Look up and consume (single-use) the flow state bound to a callback's {@code state} token.
+     *
+     * @param state the state returned on the callback
+     * @return the bound {@link OAuthFlowState}, or {@code null} if the state is unknown, already consumed or expired
+     */
+    OAuthFlowState consumeAuthorizationFlowState(String state);
+
+    /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication
      *
      * @param siteUrl        String current site URL

@@ -60,6 +60,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
     private static final Configuration JSONPATH_CONFIG = Configuration.builder().build();
+    private static final String FLOW_STATE_KEY_PREFIX = "oauth_";
+    private static final String FLOW_SESSION_ID = "sessionId";
 
     private final Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map;
 
@@ -212,6 +214,33 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         } catch (Exception e) {
             throw new JahiaOAuthException("Something when wrong in OAuth with config " + config.getConnectorName(), e);
         }
+    }
+
+    @Override
+    public void cacheAuthorizationFlowState(String state, String sessionId, String nonce) {
+        JSONObject json = new JSONObject();
+        json.put(FLOW_SESSION_ID, sessionId);
+        if (nonce != null) {
+            json.put(JahiaOAuthConstants.NONCE, nonce);
+        }
+        jahiaAuthMapperService.cacheValue(FLOW_STATE_KEY_PREFIX + state, json.toString());
+    }
+
+    @Override
+    public OAuthFlowState consumeAuthorizationFlowState(String state) {
+        if (StringUtils.isBlank(state)) {
+            return null;
+        }
+        String cacheKey = FLOW_STATE_KEY_PREFIX + state;
+        String value = jahiaAuthMapperService.getCachedValue(cacheKey);
+        if (value == null) {
+            return null;
+        }
+        // Single-use: consume before proceeding.
+        jahiaAuthMapperService.invalidate(cacheKey);
+        JSONObject json = new JSONObject(value);
+        return new OAuthFlowState(json.optString(FLOW_SESSION_ID, null),
+                json.has(JahiaOAuthConstants.NONCE) ? json.optString(JahiaOAuthConstants.NONCE, null) : null);
     }
 
     private void verifyIdTokenNonce(OAuth2AccessToken accessToken, String expectedNonce) throws JahiaOAuthException {
