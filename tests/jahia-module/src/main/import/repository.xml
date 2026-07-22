@@ -89,6 +89,9 @@
                                   jcr:mixinTypes="mix:title"
                                   jcr:primaryType="jnt:translation"
                                   jcr:title="Authentication Result"/>
+                <pagecontent jcr:primaryType="jnt:contentList">
+                    <oauth-result-view jcr:primaryType="joant:oauthResult"/>
+                </pagecontent>
             </oauth-result>
         </jahia-oauth-test-module>
     </modules>
