@@ -20,13 +20,18 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * This servlet is only here to support FC test server, which only allows /callback url. This can only be used in a root context.
  */
 @Component(immediate = true, service = AbstractServletFilter.class)
 public class FranceConnectFilter extends AbstractServletFilter {
+
+    private static final Pattern DISPATCHABLE_CALLBACK_PATH = Pattern
+            .compile("/(?:sites|cms)(?:/[\\w-]+)+\\.franceConnectOAuthCallbackAction\\.do");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -43,11 +48,16 @@ public class FranceConnectFilter extends AbstractServletFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request.getParameter("url") != null && request.getParameter("url").endsWith(".franceConnectOAuthCallbackAction.do")) {
-            request.getRequestDispatcher(request.getParameter("url")).forward(request, response);
+        String url = request.getParameter("url");
+        if (url != null && isGet(request) && DISPATCHABLE_CALLBACK_PATH.matcher(url).matches()) {
+            request.getRequestDispatcher(url).forward(request, response);
         } else {
             chain.doFilter(request, response);
         }
+    }
+
+    private static boolean isGet(ServletRequest request) {
+        return request instanceof HttpServletRequest && "GET".equals(((HttpServletRequest) request).getMethod());
     }
 
     @Override
