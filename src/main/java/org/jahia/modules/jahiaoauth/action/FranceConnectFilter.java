@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class FranceConnectFilter extends AbstractServletFilter {
 
     private static final Pattern DISPATCHABLE_CALLBACK_PATH = Pattern
-            .compile("/(?:sites|cms)(?:/[\\w-]+)+\\.franceConnectOAuthCallbackAction\\.do");
+            .compile("/(?:sites|cms)/[\\w/-]*[\\w-]\\.franceConnectOAuthCallbackAction\\.do");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -49,11 +49,22 @@ public class FranceConnectFilter extends AbstractServletFilter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String url = request.getParameter("url");
-        if (url != null && isGet(request) && DISPATCHABLE_CALLBACK_PATH.matcher(url).matches()) {
+        if (isGet(request) && isDispatchableCallbackPath(url)) {
             request.getRequestDispatcher(url).forward(request, response);
         } else {
             chain.doFilter(request, response);
         }
+    }
+
+    /**
+     * A target is dispatched only when it is a page path under /sites or /cms, made of plain non-empty segments,
+     * calling the FranceConnect callback action. The request dispatcher strips path parameters, splits off the query
+     * string and normalizes the path before mapping it, so a target accepted on anything less than plain segments can
+     * resolve to another resource than the one that was checked, and a forward is not re-evaluated by the security
+     * filter chain.
+     */
+    private static boolean isDispatchableCallbackPath(String url) {
+        return url != null && !url.contains("//") && DISPATCHABLE_CALLBACK_PATH.matcher(url).matches();
     }
 
     private static boolean isGet(ServletRequest request) {

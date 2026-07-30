@@ -97,6 +97,13 @@ describe('FranceConnect /callback filter', () => {
         });
     });
 
+    it('Should not dispatch to a target the request dispatcher would normalize', () => {
+        // An empty segment is collapsed before the path is mapped, so what was checked is not what would be served
+        requestCallback(`/cms//render/live/en/sites/systemsite/home${CALLBACK_ACTION}`).then(response => {
+            expect(response.status).to.eq(declinedStatus);
+        });
+    });
+
     it('Should not serve the tools consoles to an unauthenticated visitor directly', () => {
         // Control: the consoles are gated, so the dispatch above is what the previous tests could have bypassed
         cy.request({
