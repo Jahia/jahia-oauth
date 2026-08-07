@@ -106,10 +106,10 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
-    public String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams) {
+    public String getAuthorizationUrl(ConnectorConfig config, String state, Map<String, String> additionalParams) {
         OAuth20Service service = createOAuth20Service(config);
 
-        return service.createAuthorizationUrlBuilder().additionalParams(additionalParams).state(sessionId).build();
+        return service.createAuthorizationUrlBuilder().additionalParams(additionalParams).state(state).build();
     }
 
     @Override
@@ -125,13 +125,13 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     }
 
     @Override
-    public String getAuthorizationUrl(ConnectorConfig config, String sessionId) {
-        return getAuthorizationUrl(config, sessionId, null);
+    public String getAuthorizationUrl(ConnectorConfig config, String state) {
+        return getAuthorizationUrl(config, state, null);
     }
 
     @Override
     @SuppressWarnings("java:S3776")
-    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception {
+    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws Exception {
         OAuth20Service service = createOAuth20Service(config);
         OAuth2AccessToken accessToken = service.getAccessToken(token);
 
@@ -189,7 +189,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             // Get Mappers
             for (MapperConfig mapperConfig : config.getMappers()) {
                 if (mapperConfig.isActive()) {
-                    jahiaAuthMapperService.executeMapper(state, mapperConfig, propertiesResult);
+                    jahiaAuthMapperService.executeMapper(sessionId, mapperConfig, propertiesResult);
                 }
             }
 
