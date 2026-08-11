@@ -52,9 +52,9 @@ public interface JahiaOAuthService {
      * @param config    The oauth config for the connector
      * @param token     String token send by the OAuth API
      * @param sessionId String user session id the resolved identity is cached against (read back by the SSO valve)
-     * @throws Exception
+     * @throws JahiaOAuthException if the token exchange, the protected resource calls or the mapper execution fail
      */
-    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws Exception;
+    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws JahiaOAuthException;
 
     /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication

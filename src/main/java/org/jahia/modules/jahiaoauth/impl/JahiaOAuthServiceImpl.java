@@ -41,11 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Main OAuth service implementation for Jahia OAuth module.
@@ -131,9 +133,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Override
     @SuppressWarnings("java:S3776")
-    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws Exception {
+    public void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws JahiaOAuthException {
         OAuth20Service service = createOAuth20Service(config);
-        OAuth2AccessToken accessToken = service.getAccessToken(token);
+        OAuth2AccessToken accessToken = getAccessToken(service, token);
 
         OAuthConnectorService connectorService = BundleUtils.getOsgiService(OAuthConnectorService.class,
                 "(" + JahiaAuthConstants.CONNECTOR_SERVICE_NAME + "=" + config.getConnectorName() + ")");
@@ -151,12 +153,13 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             OAuthRequest request = new OAuthRequest(Verb.GET, url);
             request.addHeader("x-li-format", "json");
             service.signRequest(accessToken, request);
-            Response response = service.execute(request);
+            Response response = executeRequest(service, request);
+            String responseBody = readBody(response);
 
             // if we got the properties then execute mapper
             if (response.getCode() == HttpServletResponse.SC_OK) {
                 try {
-                    JSONObject responseJson = new JSONObject(response.getBody());
+                    JSONObject responseJson = new JSONObject(responseBody);
                     if (logger.isDebugEnabled()) {
                         logger.debug(responseJson.toString());
                     }
@@ -168,18 +171,18 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
                     propertiesResult.putAll(getEnhancedPropertiesForMappers(propertiesResult, config, responseJson));
                 } catch (Exception e) {
                     logger.error("Did not received expected json, response message was: {} and response body was: {}",
-                            response.getMessage(), response.getBody());
-                    throw e;
+                            response.getMessage(), responseBody);
+                    throw new JahiaOAuthException("Did not receive the expected JSON from the protected resource", e);
                 }
             } else if (urlsToProcess.size() > 1 && response.getCode() == HttpServletResponse.SC_FORBIDDEN) {
                 // In case of multiple url, it is possible that not all available.
                 // Do nothing in that case - we check at the end if all properties are filled
             } else {
                 logger.error("Did not received expected response, response code: {}, response message: {} response body was: {}",
-                        response.getCode(), response.getMessage(), response.getBody());
+                        response.getCode(), response.getMessage(), responseBody);
                 throw new JahiaOAuthException(
                         "Did not received expected response, response code: " + response.getCode() + ", response message: " + response
-                                .getMessage() + " response body was: " + response.getBody());
+                                .getMessage() + " response body was: " + responseBody);
             }
         }
 
@@ -197,6 +200,36 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             jahiaAuthMapperService.executeConnectorResultProcessors(config, propertiesResult);
         } catch (Exception e) {
             throw new JahiaOAuthException("Something when wrong in OAuth with config " + config.getConnectorName(), e);
+        }
+    }
+
+    private OAuth2AccessToken getAccessToken(OAuth20Service service, String token) throws JahiaOAuthException {
+        try {
+            return service.getAccessToken(token);
+        } catch (IOException | ExecutionException e) {
+            throw new JahiaOAuthException("Unable to retrieve the OAuth access token", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new JahiaOAuthException("Interrupted while retrieving the OAuth access token", e);
+        }
+    }
+
+    private Response executeRequest(OAuth20Service service, OAuthRequest request) throws JahiaOAuthException {
+        try {
+            return service.execute(request);
+        } catch (IOException | ExecutionException e) {
+            throw new JahiaOAuthException("Unable to query the OAuth protected resource", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new JahiaOAuthException("Interrupted while querying the OAuth protected resource", e);
+        }
+    }
+
+    private String readBody(Response response) throws JahiaOAuthException {
+        try {
+            return response.getBody();
+        } catch (IOException e) {
+            throw new JahiaOAuthException("Unable to read the OAuth protected resource response body", e);
         }
     }
 
