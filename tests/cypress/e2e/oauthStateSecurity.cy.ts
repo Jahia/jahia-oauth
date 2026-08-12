@@ -88,8 +88,10 @@ describe('OAuth state / session-fixation hardening (JAHIA-SEC-123)', () => {
     });
 
     it('Should send a random state that is not the HTTP session id', () => {
-        // Initiating the flow returns the authorization URL the browser would be redirected to
-        cy.request({url: connectUrl(), failOnStatusCode: false}).then(response => {
+        // Initiating the flow returns the authorization URL the browser would be redirected to.
+        // The action only serves its JSON body for an "Accept: application/json" request (as the button XHR does);
+        // without it Jahia renders an HTML page with an empty body.
+        cy.request({url: connectUrl(), headers: {Accept: 'application/json'}, failOnStatusCode: false}).then(response => {
             expect(response.status).to.eq(200);
 
             const authorizationUrl = asJson(response.body).authorizationUrl;
@@ -117,8 +119,10 @@ describe('OAuth state / session-fixation hardening (JAHIA-SEC-123)', () => {
         registerGoogleOauthTokenMock(authCode);
         registerGoogleUserInfoMock(user);
 
-        // Establish a session (and a real, in-progress flow bound to it)
-        cy.request({url: connectUrl(), failOnStatusCode: false}).its('status').should('eq', 200);
+        // Establish a session and a real, in-progress flow bound to it (Accept: application/json so the action runs
+        // and stores its state, mirroring the button XHR)
+        cy.request({url: connectUrl(), headers: {Accept: 'application/json'}, failOnStatusCode: false})
+            .its('status').should('eq', 200);
 
         cy.getCookie('JSESSIONID').then(cookie => {
             const sessionId = cookie?.value as string;
