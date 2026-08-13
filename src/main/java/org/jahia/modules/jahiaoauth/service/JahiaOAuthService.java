@@ -30,31 +30,31 @@ public interface JahiaOAuthService {
     /**
      * This method will get the authorization URL so a connector can display the authentication popup to the user
      *
-     * @param config    The oauth config for the connector
-     * @param sessionId String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
+     * @param config The oauth config for the connector
+     * @param state  Opaque anti-CSRF state value sent to the OAuth provider and returned unchanged on the callback
      * @return String authorization URL
      */
-    String getAuthorizationUrl(ConnectorConfig config, String sessionId);
+    String getAuthorizationUrl(ConnectorConfig config, String state);
 
     /**
      * This method will get the authorization URL so a connector can display the authentication popup to the user
      *
      * @param config           The oauth config for the connector
-     * @param sessionId        String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
+     * @param state            Opaque anti-CSRF state value sent to the OAuth provider and returned unchanged on the callback
      * @param additionalParams additional parameter required to get the authorization URL
      * @return String authorization URL
      */
-    String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams);
+    String getAuthorizationUrl(ConnectorConfig config, String state, Map<String, String> additionalParams);
 
     /**
      * This method will extract the token and execute the mappers action
      *
-     * @param config The oauth config for the connector
-     * @param token  String token send by the OAuth API
-     * @param state  String state send back by OAuth API in this context it's the user session ID
-     * @throws Exception
+     * @param config    The oauth config for the connector
+     * @param token     String token send by the OAuth API
+     * @param sessionId String user session id the resolved identity is cached against (read back by the SSO valve)
+     * @throws JahiaOAuthException if the token exchange, the protected resource calls or the mapper execution fail
      */
-    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
+    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String sessionId) throws JahiaOAuthException;
 
     /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication
