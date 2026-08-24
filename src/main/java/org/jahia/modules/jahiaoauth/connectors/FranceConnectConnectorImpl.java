@@ -63,6 +63,13 @@ public class FranceConnectConnectorImpl extends Connector implements OAuthConnec
     }
 
     @Override
+    public String getVerifiedSubjectProperty() {
+        // FranceConnect states the subject it verified in the claim sub, and this connector offers
+        // that claim under the property name id.
+        return "id";
+    }
+
+    @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         return mapProtectedResourceUrl
                 .get(config.getProperty("oauthApiName") != null ? config.getProperty("oauthApiName") : config.getConnectorName());
@@ -73,4 +80,5 @@ public class FranceConnectConnectorImpl extends Connector implements OAuthConnec
     public void setJahiaOAuthConfiguration(JahiaOAuthConfiguration jahiaOAuthConfiguration) {
         super.setJahiaOAuthConfiguration(jahiaOAuthConfiguration);
     }
+
 }

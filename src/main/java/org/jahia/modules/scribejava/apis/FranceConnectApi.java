@@ -15,7 +15,10 @@
  */
 package org.jahia.modules.scribejava.apis;
 
+import com.github.scribejava.apis.openid.OpenIdJsonTokenExtractor;
 import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.extractors.TokenExtractor;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth2.clientauthentication.ClientAuthentication;
 import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme;
 
@@ -53,5 +56,18 @@ public class FranceConnectApi extends DefaultApi20 {
 
     public ClientAuthentication getClientAuthentication() {
         return RequestBodyAuthenticationScheme.instance();
+    }
+
+    /**
+     * FranceConnect is an OpenID Connect provider, so its token response carries an identity token and
+     * the default extractor drops it.
+     * <p>
+     * This is also what tells the framework that a nonce is owed on this flow, so the fact that the
+     * provider speaks OpenID Connect is stated once, here, rather than declared a second time by the
+     * connector. See {@code TokenExchangePolicy}.
+     */
+    @Override
+    public TokenExtractor<OAuth2AccessToken> getAccessTokenExtractor() {
+        return OpenIdJsonTokenExtractor.instance();
     }
 }

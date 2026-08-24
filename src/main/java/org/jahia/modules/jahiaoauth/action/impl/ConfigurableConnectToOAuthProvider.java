@@ -23,7 +23,6 @@ import org.osgi.service.component.annotations.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Component(
     service = Action.class,
@@ -34,9 +33,6 @@ public class ConfigurableConnectToOAuthProvider extends ConnectToOAuthProvider {
 
     private static final String ADDITIONAL_PARAMS_PREFIX = "additionalParams_";
 
-    private boolean randomNonceAdditionalParam;
-    private Map<String, String> additionalParams;
-
     @Activate
     public void activate(Map<String, Object> config) {
         setName((String) config.get("connectToActionName"));
@@ -44,21 +40,10 @@ public class ConfigurableConnectToOAuthProvider extends ConnectToOAuthProvider {
         setRequiredMethods("GET");
         setConnectorName((String) config.get("connectorName"));
 
-        this.additionalParams = extractAdditionalParams(config);
-        this.randomNonceAdditionalParam = Boolean.parseBoolean(
-            String.valueOf(config.getOrDefault("randomNonceAdditionalParam", "false"))
-        );
-    }
-
-    @Override
-    public Map<String, String> getAdditionalParams() {
-        if (!randomNonceAdditionalParam) {
-            return additionalParams;
-        }
-
-        Map<String, String> params = new HashMap<>(additionalParams);
-        params.put("nonce", UUID.randomUUID().toString());
-        return params;
+        // Hand the parameters to the field the parent reads, which is the one field that holds them.
+        // A second field of the same name in this class would be the field written and not the field
+        // read, so the configured additionalParams_ entries live in the inherited one alone.
+        setAdditionalParams(extractAdditionalParams(config));
     }
 
     private Map<String, String> extractAdditionalParams(Map<String, Object> config) {

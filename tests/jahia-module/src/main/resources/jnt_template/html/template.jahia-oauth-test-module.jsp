@@ -27,6 +27,9 @@
             </c:when>
             <c:otherwise>
                 <div data-test="user-guest">Guest</div>
+                <%-- Jahia asks the login URL provider for this link while the page renders, and the
+                     rendered markup is cached per fragment. --%>
+                <a data-test="login-link" href="${url.login}">Sign in</a>
             </c:otherwise>
         </c:choose>
     </div>

@@ -33,6 +33,13 @@ import java.util.List;
 public class GoogleConnectorImpl extends Connector implements OAuthConnectorService {
 
     @Override
+    public String getVerifiedSubjectProperty() {
+        // Google states the subject it verified in the claim sub, and this connector offers that
+        // claim under the property name id.
+        return "id";
+    }
+
+    @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         List<String> urls = jahiaOAuthConfiguration.getGoogleUserInfoEndpoints();
         return urls.get(0);

@@ -33,4 +33,5 @@ public interface OAuthConnectorService extends ConnectorService {
     default List<String> getProtectedResourceUrls(ConnectorConfig config) {
         return Collections.singletonList(getProtectedResourceUrl(config));
     }
+
 }

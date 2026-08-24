@@ -76,6 +76,13 @@ public class FacebookConnectorImpl extends Connector implements OAuthConnectorSe
     }
 
     @Override
+    public String getVerifiedSubjectProperty() {
+        // Facebook states the subject it verified in id, which is the identifier of the person for
+        // this application.
+        return "id";
+    }
+
+    @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         List<String> urls = jahiaOAuthConfiguration.getFacebookUserInfoEndpoints();
         String userInfoEndpoint = urls.get(0);
