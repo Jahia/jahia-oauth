@@ -18,8 +18,8 @@
 <%--@elvariable id="url" type="org.jahia.services.render.URLGenerator"--%>
 
 <c:if test="${renderContext.user.name == 'guest' or renderContext.editMode or renderContext.request.getAttribute('ce_preview') != null}">
-    <c:set var="cssClass" value="${currentNode.properties['cssClass'].string}"/>
-    <c:set var="htmlId" value="${currentNode.properties['htmlId'].string}"/>
+    <c:set var="cssClass" value="${fn:escapeXml(currentNode.properties['cssClass'].string)}"/>
+    <c:set var="htmlId" value="${fn:escapeXml(currentNode.properties['htmlId'].string)}"/>
     <c:set var="tagType" value="${currentNode.properties['tagType'].string}"/>
     <template:addResources type="css" resources="joaFontRoboto.css"/>
     <template:addResources type="css" resources="button.css"/>
@@ -38,6 +38,10 @@
                     var json = JSON.parse(xhr.responseText);
                     popup.location.href = json.authorizationUrl;
                     window.addEventListener('message', function (event) {
+                        if (event.origin !== window.location.origin) {
+                            return;
+                        }
+
                         if (event.data.authenticationIsDone) {
                             setTimeout(function () {
                                 popup.close();
@@ -71,7 +75,7 @@
                                 <path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/>
                             </svg>
                         </span>
-                        <p class="btn-text">${currentNode.displayableName}</p>
+                        <p class="btn-text">${fn:escapeXml(currentNode.displayableName)}</p>
                     </button>
                 </c:when>
                 <c:otherwise>
@@ -92,7 +96,7 @@
                                 </svg>
                             </span>
                         </span>
-                        <p class="btn-text">${currentNode.displayableName}</p>
+                        <p class="btn-text">${fn:escapeXml(currentNode.displayableName)}</p>
                     </button>
                 </c:otherwise>
             </c:choose>
@@ -115,7 +119,7 @@
                                 <path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/>
                             </svg>
                         </span>
-                        <p class="btn-text">${currentNode.displayableName}</p>
+                        <p class="btn-text">${fn:escapeXml(currentNode.displayableName)}</p>
                     </a>
                 </c:when>
                 <c:otherwise>
@@ -136,7 +140,7 @@
                                 </svg>
                             </span>
                         </span>
-                        <p class="btn-text">${currentNode.displayableName}</p>
+                        <p class="btn-text">${fn:escapeXml(currentNode.displayableName)}</p>
                     </a>
                 </c:otherwise>
             </c:choose>

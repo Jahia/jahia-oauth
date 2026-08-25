@@ -26,7 +26,7 @@
         <template:addResources>
             <script>
                 (function() {
-                    window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate}}, '*');
+                    window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate eq true}}, window.location.origin);
 
                     <c:if test="${param.isAuthenticate eq true}">
                         console.log('This window will be closed in 3 sec');
