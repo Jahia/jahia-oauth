@@ -26,7 +26,9 @@
         <template:addResources>
             <script>
                 (function() {
-                    window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate eq true}}, window.location.origin);
+                    if (window.opener) {
+                        window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate eq true}}, '*');
+                    }
 
                     <c:if test="${param.isAuthenticate eq true}">
                         console.log('This window will be closed in 3 sec');
@@ -42,7 +44,7 @@
         </template:addResources>
 
         <c:choose>
-            <c:when test="${param.isAuthenticate}">
+            <c:when test="${param.isAuthenticate eq true}">
                 <p>
                     <fmt:message key="joant_oauthResult.message.success.authenticate"/>
                 </p>

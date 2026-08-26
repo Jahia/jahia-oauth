@@ -39,7 +39,7 @@
                     var json = JSON.parse(xhr.responseText);
                     popup.location.href = json.authorizationUrl;
                     window.addEventListener('message', function (event) {
-                        if (event.origin !== window.location.origin) {
+                        if (event.source !== popup) {
                             return;
                         }
 
