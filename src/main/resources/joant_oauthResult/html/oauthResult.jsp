@@ -26,7 +26,15 @@
         <template:addResources>
             <script>
                 (function() {
-                    window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate}}, '*');
+                    <%-- The opener is addressed with '*' because this window cannot know its
+                         origin: the popup lands on the callback URL configured for the connector,
+                         while the opener is on whatever host the visitor used. Naming an origin
+                         here would drop the message whenever those differ. Each button view
+                         accepts a result only from the popup it opened, which is a check that
+                         does not depend on either host. --%>
+                    if (window.opener) {
+                        window.opener.postMessage({authenticationIsDone: true, isAuthenticate: ${param.isAuthenticate eq true}}, '*');
+                    }
 
                     <c:if test="${param.isAuthenticate eq true}">
                         console.log('This window will be closed in 3 sec');
@@ -42,7 +50,7 @@
         </template:addResources>
 
         <c:choose>
-            <c:when test="${param.isAuthenticate}">
+            <c:when test="${param.isAuthenticate eq true}">
                 <p>
                     <fmt:message key="joant_oauthResult.message.success.authenticate"/>
                 </p>
