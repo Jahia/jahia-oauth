@@ -32,6 +32,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import javax.jcr.RepositoryException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +74,8 @@ public class CustomConnectorResultProcessor implements ConnectorResultProcessor 
     }
 
     @Override
-    public void execute(ConnectorConfig connectorConfig, Map<String, Object> results) {
+    public void execute(HttpServletRequest httpServletRequest, ConnectorConfig connectorConfig,
+            Map<String, Object> results) {
         Object login = results.get("id");
         Object simpleArray = results.get("$.nestedLevel.simpleArray");
         // Guard: only execute when both the user login and the array value are present.

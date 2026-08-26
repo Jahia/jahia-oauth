@@ -18,6 +18,8 @@ package org.jahia.modules.jahiaoauth.service;
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import org.jahia.modules.jahiaauth.service.ConnectorConfig;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.util.Map;
 
 /**
@@ -28,33 +30,50 @@ import java.util.Map;
 public interface JahiaOAuthService {
 
     /**
-     * This method will get the authorization URL so a connector can display the authentication popup to the user
+     * Starts a sign-in and returns the URL the browser goes to.
+     * <p>
+     * The service owns the secrets of the flow. It creates them, records them on the session and
+     * sends them to the identity provider, so a connector never handles a state or a nonce and cannot
+     * omit one.
      *
-     * @param config    The oauth config for the connector
-     * @param sessionId String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
-     * @return String authorization URL
-     */
-    String getAuthorizationUrl(ConnectorConfig config, String sessionId);
-
-    /**
-     * This method will get the authorization URL so a connector can display the authentication popup to the user
-     *
+     * @param httpRequest      the request that starts the sign-in
      * @param config           The oauth config for the connector
-     * @param sessionId        String user session ID to be able to identify the token on the callback the session ID of the user is added to the request
-     * @param additionalParams additional parameter required to get the authorization URL
+     * @param additionalParams additional parameter required to get the authorization URL, may be {@code null}
      * @return String authorization URL
      */
-    String getAuthorizationUrl(ConnectorConfig config, String sessionId, Map<String, String> additionalParams);
+    String getAuthorizationUrl(HttpServletRequest httpRequest, ConnectorConfig config, Map<String, String> additionalParams);
 
     /**
-     * This method will extract the token and execute the mappers action
+     * Builds the authorization URL of a connector without starting a sign-in.
+     * <p>
+     * A page that renders a link, and code that only wants the endpoint of the identity provider, call
+     * this. {@link #getAuthorizationUrl} records a flow on the session, so calling it to display
+     * something replaces the flow of a sign-in that is under way, and that sign-in then answers a state
+     * the session no longer holds.
      *
      * @param config The oauth config for the connector
-     * @param token  String token send by the OAuth API
-     * @param state  String state send back by OAuth API in this context it's the user session ID
-     * @throws Exception
+     * @return the authorization URL, carrying no state and no nonce
      */
-    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String state) throws Exception;
+    String getAuthorizationEndpointUrl(ConnectorConfig config);
+
+    /**
+     * Finishes a sign-in: checks that the callback answers a flow this session started, exchanges the
+     * code, checks the identity token and runs the mappers.
+     * <p>
+     * The state and the nonce are checked here, before anything else happens, so every connector gets
+     * both checks by calling this method. A callback that answers no flow of this session is refused
+     * and no code is exchanged.
+     *
+     * @param config        The oauth config for the connector
+     * @param token         String token send by the OAuth API
+     * @param receivedState the state the identity provider returned on the callback
+     * @param httpRequest   The request the identity provider called back. What the mappers resolve is
+     *                      recorded on its session, and the SSO valve reads it back from there.
+     * @throws JahiaOAuthException if the callback answers no flow, if the identity token does not
+     *                             hold, or if the token exchange or the mapper execution fail
+     */
+    void extractAccessTokenAndExecuteMappers(ConnectorConfig config, String token, String receivedState,
+            HttpServletRequest httpRequest) throws JahiaOAuthException;
 
     /**
      * This method will return the URL of the result page so the user can be inform of the succes or not of his authentication

@@ -36,6 +36,12 @@ import java.util.Map;
  * @author dgaillard
  */
 public class ConnectToOAuthProvider extends Action {
+    /**
+     * Asks this action to redirect the browser rather than answer the authorization URL as JSON. The
+     * login URL of the framework carries it, because a link cannot read a JSON document.
+     */
+    public static final String REDIRECT_PARAMETER = "redirect";
+
     private SettingsService settingsService;
     private JahiaOAuthService jahiaOAuthService;
     private String connectorName;
@@ -45,11 +51,16 @@ public class ConnectToOAuthProvider extends Action {
     public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session,
             Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
 
-        final String sessionId = req.getSession().getId();
-
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
+        // The service owns the secrets of the flow, so this action handles no state and no nonce.
+        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(req, oauthConfig, getAdditionalParams());
+        // Two callers ask for a sign-in in two shapes. A link sends the browser here and needs a
+        // redirect, and a popup driven from JavaScript reads the URL out of a JSON document. The caller
+        // says which by asking for a redirect, so one action serves both and the flow is created once.
+        if (parameters.containsKey(REDIRECT_PARAMETER)) {
+            return new ActionResult(HttpServletResponse.SC_OK, authorizationUrl, true, null);
+        }
         JSONObject response = new JSONObject();
         response.put(JahiaOAuthConstants.AUTHORIZATION_URL, authorizationUrl);
         return new ActionResult(HttpServletResponse.SC_OK, null, response);
@@ -65,6 +76,13 @@ public class ConnectToOAuthProvider extends Action {
 
     public void setSettingsService(SettingsService settingsService) {
         this.settingsService = settingsService;
+    }
+
+    /**
+     * @return the connector this action starts a sign-in for
+     */
+    public String getConnectorName() {
+        return connectorName;
     }
 
     public void setConnectorName(String connectorName) {

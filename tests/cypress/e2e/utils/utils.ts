@@ -24,6 +24,17 @@ interface OAuthConnectorConfig {
     oauthApiName: string;
     mapping: PropertyMapping[];
     customMapping?: PropertyMapping[];
+
+    /**
+     * Accepts a token endpoint served over plain http. Defaults to true, because the mock identity
+     * provider of this suite is wiremock over http, while the framework refuses a plaintext token
+     * endpoint: the identity token is accepted without a signature check, and that exemption rests on
+     * TLS.
+     *
+     * A test that asserts the refusal itself passes false. Do not remove that test and leave this
+     * default as the only statement about the rule, because then nothing measures it.
+     */
+    allowInsecureTokenEndpoint?: boolean;
 }
 
 /**
@@ -46,6 +57,7 @@ ${config.apiPrefix}.apiKey = ${config.credentials.clientId}
 ${config.apiPrefix}.apiSecret = ${config.credentials.clientSecret}
 ${config.apiPrefix}.callbackUrl = ${baseUrl}/sites/${config.siteKey}/home.${config.callbackAction}
 ${config.apiPrefix}.scope = ${config.scope}
+${config.apiPrefix}.allowInsecureTokenEndpoint = ${config.allowInsecureTokenEndpoint !== false}
 ${config.apiPrefix}.oauthApiName = ${config.oauthApiName}
 ${config.apiPrefix}.mappers.jcrOAuthProvider.enabled = true
 ${config.apiPrefix}.mappers.jcrOAuthProvider.createUserAtSiteLevel = false

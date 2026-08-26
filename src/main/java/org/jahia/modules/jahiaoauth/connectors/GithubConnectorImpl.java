@@ -33,6 +33,13 @@ import java.util.List;
 public class GithubConnectorImpl extends Connector implements OAuthConnectorService {
 
     @Override
+    public String getVerifiedSubjectProperty() {
+        // GitHub states the subject it verified in id. The login beside it is the name the account
+        // holder chooses, and the account holder may change it.
+        return "id";
+    }
+
+    @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         List<String> urls = jahiaOAuthConfiguration.getGitHubUserInfoEndpoints();
         return urls.get(0);

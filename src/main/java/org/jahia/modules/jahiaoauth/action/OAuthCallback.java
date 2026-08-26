@@ -58,7 +58,7 @@ public class OAuthCallback extends Action {
             String siteKey = renderContext.getSite().getSiteKey();
             ConnectorConfig oauthConfig = settingsService.getConnectorConfig(siteKey, connectorName);
             try {
-                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, state);
+                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, state, req);
                 isAuthenticate = true;
             } catch (Exception ex) {
                 logger.error("Could not authenticate user", ex);

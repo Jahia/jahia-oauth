@@ -66,6 +66,12 @@ public class LinkedInConnectorImpl extends Connector implements OAuthConnectorSe
     }
 
     @Override
+    public String getVerifiedSubjectProperty() {
+        // LinkedIn states the subject it verified in id, which is the identifier of the member.
+        return "id";
+    }
+
+    @Override
     public String getProtectedResourceUrl(ConnectorConfig config) {
         return null; // never called
     }
