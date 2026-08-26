@@ -55,14 +55,10 @@ public class OAuthCallback extends Action {
             if (StringUtils.isBlank(token) || StringUtils.isBlank(state)) {
                 return ActionResult.BAD_REQUEST;
             }
-            if (!OAuthStateHelper.consumeState(req, connectorName, state)) {
-                logger.warn("Rejected OAuth callback for connector '{}': the state parameter did not match a value issued for this session", connectorName);
-                return ActionResult.BAD_REQUEST;
-            }
             String siteKey = renderContext.getSite().getSiteKey();
             ConnectorConfig oauthConfig = settingsService.getConnectorConfig(siteKey, connectorName);
             try {
-                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, req.getSession().getId());
+                jahiaOAuthService.extractAccessTokenAndExecuteMappers(oauthConfig, token, state);
                 isAuthenticate = true;
             } catch (Exception ex) {
                 logger.error("Could not authenticate user", ex);

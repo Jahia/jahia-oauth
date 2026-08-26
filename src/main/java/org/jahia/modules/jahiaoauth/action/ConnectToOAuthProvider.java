@@ -45,11 +45,11 @@ public class ConnectToOAuthProvider extends Action {
     public ActionResult doExecute(HttpServletRequest req, RenderContext renderContext, Resource resource, JCRSessionWrapper session,
             Map<String, List<String>> parameters, URLResolver urlResolver) throws Exception {
 
-        final String state = OAuthStateHelper.createState(req, connectorName);
+        final String sessionId = req.getSession().getId();
 
         ConnectorConfig oauthConfig = settingsService.getConnectorConfig(renderContext.getSite().getSiteKey(), connectorName);
 
-        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, state, getAdditionalParams());
+        String authorizationUrl = jahiaOAuthService.getAuthorizationUrl(oauthConfig, sessionId, getAdditionalParams());
         JSONObject response = new JSONObject();
         response.put(JahiaOAuthConstants.AUTHORIZATION_URL, authorizationUrl);
         return new ActionResult(HttpServletResponse.SC_OK, null, response);
