@@ -1,8 +1,10 @@
 - addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
 # must use the deprecated 'installBundle' command while the target Jahia version is < 8.2.3.0 (where the 'installModule' command got added)
 - installBundle:
-    # The range should include the jahia-authentication version defined in the pom.xml
-    - 'mvn:org.jahia.modules/jahia-authentication/[1.7,2.0-SNAPSHOT)'
+    # Pinned to a released version on purpose: the [1.7,2.0-SNAPSHOT) range resolves to the
+    # jahia-authentication 1.9.0-SNAPSHOT published in the snapshot repo, which fails the bundle
+    # license check in CI and is uninstalled, so nothing depending on it can start.
+    - 'mvn:org.jahia.modules/jahia-authentication/1.9.0'
     # Use the version range of jcr-auth-provider compatible with the jahia-authentication version above
     - 'mvn:org.jahia.modules/jcr-auth-provider/[3.0-SNAPSHOT,4.0-SNAPSHOT)'
   autoStart: true
