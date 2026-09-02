@@ -36,7 +36,7 @@
         <connection>scm:git:git@github.com:Jahia/jahia-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/jahia-oauth.git</developerConnection>
         <url>https://github.com/Jahia/jahia-oauth</url>
-        <tag>4_0_0</tag>
+        <tag>4_x</tag>
     </scm>
 
     <properties>
@@ -45,7 +45,7 @@
         <jahia-static-resources>/css,/images,/javascript,/icons</jahia-static-resources>
         <require-capability>org.jahia.license;filter:="(key=org.jahia.oauthConnector)"</require-capability>
         <jahia-key>org.jahia.oauthConnector</jahia-key>
-        <jahia-module-signature>MCwCFAYwKooy2abRYAmHAxYjjkIYCZ0jAhRc1fP4hGMk2VCOYEftmr3z7Ei3jw==</jahia-module-signature>
+        <jahia-module-signature>MCwCFBrFGmX5xXT+rgPKyeicm/uykI/AAhQyKxeydwOV3xREAFUo+1svUVXZlA==</jahia-module-signature>
         <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
         <sonar.sources>src/main/resources/javascript</sonar.sources>
     </properties>
