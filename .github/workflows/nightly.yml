@@ -11,11 +11,11 @@ jobs:
       matrix:
         include:
           - name: Release
-            jahia_image: jahia/jahia-ee:8
+            jahia_image: jahia/jahia-ee:8.1
             pagerduty_service: jahia-oauth-JahiaRL
             provisioning_manifest: provisioning-manifest-snapshot.yml
           - name: Snapshot
-            jahia_image: jahia/jahia-ee:8-SNAPSHOT
+            jahia_image: jahia/jahia-ee:8.1-SNAPSHOT
             pagerduty_service: jahia-oauth-JahiaSN
             provisioning_manifest: provisioning-manifest-snapshot.yml
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2

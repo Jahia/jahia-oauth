@@ -63,7 +63,7 @@ jobs:
     needs: build
     secrets: inherit
     with:
-      jahia_image: ghcr.io/jahia/jahia-ee-dev:8-SNAPSHOT
+      jahia_image: ghcr.io/jahia/jahia-ee-dev:8.1-SNAPSHOT
       module_id: jahia-oauth
       should_skip_testrail: true
       pagerduty_skip_notification: true
