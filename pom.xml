@@ -36,7 +36,7 @@
         <connection>scm:git:git@github.com:Jahia/jahia-oauth.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/jahia-oauth.git</developerConnection>
         <url>https://github.com/Jahia/jahia-oauth</url>
-        <tag>4_0_0</tag>
+        <tag>4_x</tag>
     </scm>
 
     <properties>
