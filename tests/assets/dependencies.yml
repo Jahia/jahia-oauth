@@ -1,5 +1,6 @@
 - addMavenRepository: 'https://devtools.jahia.com/nexus/content/groups/public/@snapshots@noreleases@id=JahiaPublicSnapshots'
-- installModule:
+# installBundle, not installModule: Jahia 8.1's provisioning has no installModule operation
+- installBundle:
     # The range should include the jahia-authentication version defined in the pom.xml
     - 'mvn:org.jahia.modules/jahia-authentication/[1.7,2.0-SNAPSHOT)'
     # Use the version range of jcr-auth-provider compatible with the jahia-authentication version above
