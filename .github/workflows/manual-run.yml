@@ -14,14 +14,14 @@ on:
 
 jobs:
   integration-tests-standalone:
-    name: Manual run - ${{ github.events.inputs.jahia_image }}
+    name: Manual run - ${{ github.event.inputs.jahia_image }}
     uses: Jahia/jahia-modules-action/.github/workflows/reusable-integration-tests.yml@v2
     secrets: inherit
     with:
-      jahia_image: ${{ github.events.inputs.jahia_image }}
+      jahia_image: ${{ github.event.inputs.jahia_image }}
       module_id: jahia-oauth
       should_skip_testrail: true
       pagerduty_skip_notification: true
-      provisioning_manifest: ${{ github.events.inputs.manifest }}
+      provisioning_manifest: ${{ github.event.inputs.manifest }}
       artifact_prefix: oauth
       module_branch: ${{ github.ref }}
