@@ -47,7 +47,7 @@
         <jahia-key>org.jahia.oauthConnector</jahia-key>
         <jahia-module-signature>MCwCFHy0jMxvXZ3iPMiCqIWzcVRL6mUIAhRGt2EvWUVeMekiKgLzLQQ5dZQK3w==</jahia-module-signature>
         <jahia.modules.importPackage>!com.hazelcast.config,!com.hazelcast.core</jahia.modules.importPackage>
-        <sonar.sources>src/main/resources/javascript</sonar.sources>
+        <sonar.maven.scanAll>true</sonar.maven.scanAll>
     </properties>
 
     <distributionManagement>
