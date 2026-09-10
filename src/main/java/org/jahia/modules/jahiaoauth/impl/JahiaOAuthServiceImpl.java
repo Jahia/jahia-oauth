@@ -41,7 +41,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
     private static final Configuration JSONPATH_CONFIG = Configuration.builder().build();
+    private static final String HTTPS_PREFIX = "https://";
+    private static final String UNSIGNED_ALG = "none";
 
     private final Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map;
 
@@ -147,6 +151,8 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
 
         for (String url : urlsToProcess) {
+            requireSecureEndpoint(url);
+
             // Request all the properties available right now
             OAuthRequest request = new OAuthRequest(Verb.GET, url);
             request.addHeader("x-li-format", "json");
@@ -209,9 +215,39 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         tokenData.put(JahiaOAuthConstants.TOKEN_SCOPE, accessToken.getScope());
         tokenData.put(JahiaOAuthConstants.TOKEN_TYPE, accessToken.getTokenType());
         if (accessToken instanceof OpenIdOAuth2AccessToken) {
-            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken());
+            String openIdToken = ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken();
+            requireSignedToken(openIdToken);
+            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, openIdToken);
         }
         return tokenData;
+    }
+
+    static void requireSecureEndpoint(String url) {
+        if (!StringUtils.startsWithIgnoreCase(url, HTTPS_PREFIX)) {
+            throw new IllegalArgumentException("Connector endpoint must use https: " + url);
+        }
+    }
+
+    static void requireSignedToken(String openIdToken) {
+        if (StringUtils.isBlank(openIdToken)) {
+            return;
+        }
+        String[] segments = openIdToken.split("\\.", -1);
+        if (segments.length != 3 || StringUtils.isBlank(segments[2])) {
+            throw new IllegalArgumentException("OpenID token carries no signature");
+        }
+        if (UNSIGNED_ALG.equalsIgnoreCase(readAlg(segments[0]))) {
+            throw new IllegalArgumentException("OpenID token declares an unsigned algorithm");
+        }
+    }
+
+    private static String readAlg(String encodedHeader) {
+        try {
+            String header = new String(Base64.getUrlDecoder().decode(encodedHeader), StandardCharsets.UTF_8);
+            return new JSONObject(header).optString("alg");
+        } catch (IllegalArgumentException | JSONException e) {
+            throw new IllegalArgumentException("OpenID token header is unreadable", e);
+        }
     }
 
     /**
