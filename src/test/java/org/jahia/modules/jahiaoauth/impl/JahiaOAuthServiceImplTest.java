@@ -1,6 +1,9 @@
 package org.jahia.modules.jahiaoauth.impl;
 
+import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
+import org.jahia.modules.jahiaoauth.service.JahiaOAuthConstants;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -8,6 +11,9 @@ import java.util.Collections;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -123,6 +129,31 @@ public class JahiaOAuthServiceImplTest {
                 return Collections.emptyList();
             }
         };
+    }
+
+    @Test
+    public void unsignedOpenIdTokenIsRefusedBeforeStorage() {
+        OpenIdOAuth2AccessToken accessToken = openIdAccessToken(token("{\"alg\":\"none\"}", ""));
+        assertRejected(() -> new JahiaOAuthServiceImpl().extractAccessTokenData(accessToken));
+    }
+
+    @Test
+    public void signedOpenIdTokenIsStored() {
+        String openIdToken = token("{\"alg\":\"RS256\"}", SIGNATURE);
+        Map<String, Object> tokenData = new JahiaOAuthServiceImpl().extractAccessTokenData(openIdAccessToken(openIdToken));
+        assertEquals(openIdToken, tokenData.get(JahiaOAuthConstants.OPEN_ID_TOKEN));
+    }
+
+    @Test
+    public void aPlainAccessTokenCarriesNoOpenIdToken() {
+        Map<String, Object> tokenData = new JahiaOAuthServiceImpl().extractAccessTokenData(new OAuth2AccessToken("bearer-only"));
+        assertFalse(tokenData.containsKey(JahiaOAuthConstants.OPEN_ID_TOKEN));
+    }
+
+    private static OpenIdOAuth2AccessToken openIdAccessToken(String openIdToken) {
+        OpenIdOAuth2AccessToken accessToken = new OpenIdOAuth2AccessToken("bearer", openIdToken, null);
+        assertEquals(openIdToken, accessToken.getOpenIdToken());
+        return accessToken;
     }
 
     private static void assertRejected(Runnable call) {

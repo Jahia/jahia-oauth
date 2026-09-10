@@ -217,7 +217,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private Map<String, Object> extractAccessTokenData(OAuth2AccessToken accessToken) {
+    Map<String, Object> extractAccessTokenData(OAuth2AccessToken accessToken) {
         Map<String, Object> tokenData = new HashMap<>();
 
         tokenData.put(JahiaOAuthConstants.ACCESS_TOKEN, accessToken.getAccessToken());
