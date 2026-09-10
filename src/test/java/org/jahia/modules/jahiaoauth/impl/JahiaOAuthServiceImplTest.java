@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class JahiaOAuthServiceImplTest {
 
@@ -14,8 +15,8 @@ public class JahiaOAuthServiceImplTest {
 
     @Test
     public void httpsEndpointIsAccepted() {
-        JahiaOAuthServiceImpl.requireSecureEndpoint("https://app.franceconnect.gouv.fr/api/v1/userinfo");
-        JahiaOAuthServiceImpl.requireSecureEndpoint("HTTPS://app.franceconnect.gouv.fr/api/v1/userinfo");
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSecureEndpoint("https://app.franceconnect.gouv.fr/api/v1/userinfo")));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSecureEndpoint("HTTPS://app.franceconnect.gouv.fr/api/v1/userinfo")));
     }
 
     @Test
@@ -38,14 +39,14 @@ public class JahiaOAuthServiceImplTest {
 
     @Test
     public void signedTokenIsAccepted() {
-        JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"RS256\"}", SIGNATURE));
-        JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"ES256\"}", SIGNATURE));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"RS256\"}", SIGNATURE))));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"ES256\"}", SIGNATURE))));
     }
 
     @Test
     public void absentTokenIsAccepted() {
-        JahiaOAuthServiceImpl.requireSignedToken(null);
-        JahiaOAuthServiceImpl.requireSignedToken("");
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(null)));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken("")));
     }
 
     @Test
@@ -69,6 +70,15 @@ public class JahiaOAuthServiceImplTest {
 
     private static void assertRejected(Runnable call) {
         assertThrows(IllegalArgumentException.class, call::run);
+    }
+
+    private static boolean accepted(Runnable call) {
+        try {
+            call.run();
+            return true;
+        } catch (IllegalArgumentException refused) {
+            return false;
+        }
     }
 
     private static String token(String header, String signature) {
