@@ -39,6 +39,14 @@ import java.util.List;
  */
 public interface JahiaOAuthConfiguration {
     /**
+     * Set to false only while migrating a deployment whose identity provider is still reached
+     * over cleartext.
+     *
+     * @return true when a cleartext connector endpoint is refused
+     */
+    boolean isRequireSecureEndpoints();
+
+    /**
      * Gets the list of Facebook user information endpoints.
      * <p>
      * These endpoints are used by the Facebook OAuth connector to retrieve
@@ -47,14 +55,6 @@ public interface JahiaOAuthConfiguration {
      *
      * @return a list of Facebook user info endpoint URLs
      */
-    /**
-     * Set to false only while migrating a deployment whose identity provider is still reached
-     * over cleartext.
-     *
-     * @return true when a cleartext connector endpoint is refused
-     */
-    boolean isRequireSecureEndpoints();
-
     List<String> getFacebookUserInfoEndpoints();
 
     /**

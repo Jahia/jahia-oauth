@@ -35,13 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component(configurationPid = "org.jahia.modules.jahiaoauth", service = JahiaOAuthConfiguration.class, immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
 @Designate(ocd = JahiaOAuthConfigurationImpl.Config.class)
 public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthConfigurationImpl.class);
 
-    private Config config;
+    private volatile Config config;
 
     @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
     public @interface Config {
@@ -103,7 +104,7 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
         return readConfiguration(config.googleUserInfoEndpoints());
     }
 
-    private List<String> readConfiguration(String configurationValue) {
-        return Arrays.asList(configurationValue.split(","));
+    static List<String> readConfiguration(String configurationValue) {
+        return Arrays.stream(configurationValue.split(",")).map(String::trim).collect(Collectors.toList());
     }
 }

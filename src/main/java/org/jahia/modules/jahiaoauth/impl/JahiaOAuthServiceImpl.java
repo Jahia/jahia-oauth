@@ -227,7 +227,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         tokenData.put(JahiaOAuthConstants.TOKEN_TYPE, accessToken.getTokenType());
         if (accessToken instanceof OpenIdOAuth2AccessToken) {
             String openIdToken = ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken();
-            requireSignedToken(openIdToken);
+            refuseUnsignedJws(openIdToken);
             tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, openIdToken);
         }
         return tokenData;
@@ -243,16 +243,22 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    static void requireSignedToken(String openIdToken) {
+    static void refuseUnsignedJws(String openIdToken) {
         if (StringUtils.isBlank(openIdToken)) {
             return;
         }
         String[] segments = openIdToken.split("\\.", -1);
-        if (segments.length != 3 || StringUtils.isBlank(segments[2])) {
+        // A token that is not a three-part JWS is out of scope: an encrypted or opaque token says
+        // nothing about its own signature, and refusing it would break a working deployment.
+        if (segments.length != 3) {
+            return;
+        }
+        if (StringUtils.isBlank(segments[2])) {
             throw new IllegalArgumentException("OpenID token carries no signature");
         }
-        if (UNSIGNED_ALG.equalsIgnoreCase(readAlg(segments[0]))) {
-            throw new IllegalArgumentException("OpenID token declares an unsigned algorithm");
+        String alg = readAlg(segments[0]);
+        if (StringUtils.isBlank(alg) || UNSIGNED_ALG.equalsIgnoreCase(alg)) {
+            throw new IllegalArgumentException("OpenID token declares no signature algorithm");
         }
     }
 

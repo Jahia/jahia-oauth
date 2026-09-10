@@ -42,34 +42,47 @@ public class JahiaOAuthServiceImplTest {
     }
 
     @Test
+    public void tokenWithNoAlgorithmIsRejected() {
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"kid\":\"k1\"}", SIGNATURE)));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"\"}", SIGNATURE)));
+    }
+
+    @Test
+    public void tokenThatIsNotAJwsIsLeftAlone() {
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws("opaque-token")));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(encode("{\"alg\":\"none\"}") + "." + PAYLOAD)));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(
+                encode("{\"alg\":\"none\"}") + "." + PAYLOAD + "." + SIGNATURE + "." + SIGNATURE + "." + SIGNATURE)));
+    }
+
+    @Test
     public void signedTokenIsAccepted() {
-        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"RS256\"}", SIGNATURE))));
-        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"ES256\"}", SIGNATURE))));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"RS256\"}", SIGNATURE))));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"ES256\"}", SIGNATURE))));
     }
 
     @Test
     public void absentTokenIsAccepted() {
-        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken(null)));
-        assertTrue(accepted(() -> JahiaOAuthServiceImpl.requireSignedToken("")));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(null)));
+        assertTrue(accepted(() -> JahiaOAuthServiceImpl.refuseUnsignedJws("")));
     }
 
     @Test
     public void unsignedAlgorithmIsRejected() {
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"none\"}", SIGNATURE)));
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"NONE\"}", SIGNATURE)));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"none\"}", SIGNATURE)));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"NONE\"}", SIGNATURE)));
     }
 
     @Test
     public void emptySignatureSegmentIsRejected() {
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"none\"}", "")));
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(token("{\"alg\":\"RS256\"}", "")));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"none\"}", "")));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(token("{\"alg\":\"RS256\"}", "")));
     }
 
     @Test
-    public void malformedTokenIsRejected() {
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(encode("{\"alg\":\"RS256\"}") + "." + PAYLOAD));
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken("not-a-token"));
-        assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken("!!!." + PAYLOAD + "." + SIGNATURE));
+    public void jwsWithAnUnreadableHeaderIsRejected() {
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws("!!!." + PAYLOAD + "." + SIGNATURE));
+        assertRejected(() -> JahiaOAuthServiceImpl.refuseUnsignedJws(encode("not json") + "." + PAYLOAD + "." + SIGNATURE));
     }
 
     @Test
