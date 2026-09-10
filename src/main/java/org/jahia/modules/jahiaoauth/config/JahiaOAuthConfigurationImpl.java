@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthConfigurationImpl.class);
 
+    // S3077 suppressed: modified() swaps the whole reference from the Config Admin thread, so
+    // visibility of that swap is the guarantee needed and the annotation instance is immutable.
+    @SuppressWarnings("java:S3077")
     private volatile Config config;
 
     @ObjectClassDefinition(name = "%configName", description = "%configDesc", localization = "OSGI-INF/l10n/config")
