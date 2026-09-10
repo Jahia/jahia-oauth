@@ -70,8 +70,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     @Reference
     private JahiaAuthMapperService jahiaAuthMapperService;
 
-    // Optional: the config component is ConfigurationPolicy.REQUIRE, so it is absent until a
-    // deployment writes the PID.
+    // Absent until a deployment writes the PID: the config component is ConfigurationPolicy.REQUIRE.
+    // S3077 suppressed: Declarative Services swaps the whole reference, so visibility is the guarantee needed.
+    @SuppressWarnings("java:S3077")
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     private volatile JahiaOAuthConfiguration jahiaOAuthConfiguration;
 
