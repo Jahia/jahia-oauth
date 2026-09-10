@@ -47,6 +47,14 @@ public interface JahiaOAuthConfiguration {
      *
      * @return a list of Facebook user info endpoint URLs
      */
+    /**
+     * Set to false only while migrating a deployment whose identity provider is still reached
+     * over cleartext.
+     *
+     * @return true when a cleartext connector endpoint is refused
+     */
+    boolean isRequireSecureEndpoints();
+
     List<String> getFacebookUserInfoEndpoints();
 
     /**

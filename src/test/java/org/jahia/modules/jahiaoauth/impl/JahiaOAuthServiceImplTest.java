@@ -1,10 +1,14 @@
 package org.jahia.modules.jahiaoauth.impl;
 
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.junit.Test;
+
+import java.util.Collections;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -66,6 +70,46 @@ public class JahiaOAuthServiceImplTest {
         assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken(encode("{\"alg\":\"RS256\"}") + "." + PAYLOAD));
         assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken("not-a-token"));
         assertRejected(() -> JahiaOAuthServiceImpl.requireSignedToken("!!!." + PAYLOAD + "." + SIGNATURE));
+    }
+
+    @Test
+    public void absentConfigurationRequiresHttps() {
+        assertTrue(JahiaOAuthServiceImpl.requireSecureEndpoints(null));
+    }
+
+    @Test
+    public void configurationDecidesWhenPresent() {
+        assertTrue(JahiaOAuthServiceImpl.requireSecureEndpoints(configuration(true)));
+        assertFalse(JahiaOAuthServiceImpl.requireSecureEndpoints(configuration(false)));
+    }
+
+    private static JahiaOAuthConfiguration configuration(boolean requireSecureEndpoints) {
+        return new JahiaOAuthConfiguration() {
+            @Override
+            public boolean isRequireSecureEndpoints() {
+                return requireSecureEndpoints;
+            }
+
+            @Override
+            public java.util.List<String> getFacebookUserInfoEndpoints() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public java.util.List<String> getGitHubUserInfoEndpoints() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public java.util.List<String> getLinkedInUserInfoEndpoints() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public java.util.List<String> getGoogleUserInfoEndpoints() {
+                return Collections.emptyList();
+            }
+        };
     }
 
     private static void assertRejected(Runnable call) {

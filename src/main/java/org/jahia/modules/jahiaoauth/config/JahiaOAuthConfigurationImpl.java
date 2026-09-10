@@ -53,6 +53,8 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
 
         @AttributeDefinition(name = "%linkedInUserInfoEndpoints", description = "%linkedInUserInfoEndpointsDesc") String linkedInUserInfoEndpoints();
 
+        @AttributeDefinition(name = "%requireSecureEndpoints", description = "%requireSecureEndpointsDesc") boolean requireSecureEndpoints() default true;
+
     }
 
     @Activate
@@ -74,6 +76,11 @@ public class JahiaOAuthConfigurationImpl implements JahiaOAuthConfiguration {
         logger.debug("GitHub endpoints: {}", config.gitHubUserInfoEndpoints());
         logger.debug("Google endpoints: {}", config.googleUserInfoEndpoints());
         logger.debug("LinkedIn endpoints: {}", config.linkedInUserInfoEndpoints());
+    }
+
+    @Override
+    public boolean isRequireSecureEndpoints() {
+        return config.requireSecureEndpoints();
     }
 
     @Override

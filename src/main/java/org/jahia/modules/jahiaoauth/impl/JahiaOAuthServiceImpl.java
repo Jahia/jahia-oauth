@@ -28,6 +28,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaauth.service.*;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.*;
 import org.jahia.modules.scribejava.apis.FranceConnectApi;
 import org.jahia.osgi.BundleUtils;
@@ -37,6 +38,8 @@ import org.json.JSONObject;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +69,11 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
 
     @Reference
     private JahiaAuthMapperService jahiaAuthMapperService;
+
+    // Optional: the config component is ConfigurationPolicy.REQUIRE, so it is absent until a
+    // deployment writes the PID.
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+    private volatile JahiaOAuthConfiguration jahiaOAuthConfiguration;
 
     public JahiaOAuthServiceImpl() {
         this.oAuthDefaultApi20Map = new ConcurrentHashMap<>();
@@ -151,7 +159,9 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
 
         for (String url : urlsToProcess) {
-            requireSecureEndpoint(url);
+            if (requireSecureEndpoints(jahiaOAuthConfiguration)) {
+                requireSecureEndpoint(url);
+            }
 
             // Request all the properties available right now
             OAuthRequest request = new OAuthRequest(Verb.GET, url);
@@ -220,6 +230,10 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
             tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, openIdToken);
         }
         return tokenData;
+    }
+
+    static boolean requireSecureEndpoints(JahiaOAuthConfiguration config) {
+        return config == null || config.isRequireSecureEndpoints();
     }
 
     static void requireSecureEndpoint(String url) {
