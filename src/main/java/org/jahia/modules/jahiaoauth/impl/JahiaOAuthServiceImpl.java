@@ -26,6 +26,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang.StringUtils;
 import org.jahia.modules.jahiaauth.service.*;
+import org.jahia.modules.jahiaoauth.config.JahiaOAuthConfiguration;
 import org.jahia.modules.jahiaoauth.service.*;
 import org.jahia.modules.scribejava.apis.FranceConnectApi;
 import org.jahia.osgi.BundleUtils;
@@ -35,11 +36,15 @@ import org.json.JSONObject;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +59,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component(service = JahiaOAuthService.class, immediate = true)
 public class JahiaOAuthServiceImpl implements JahiaOAuthService {
     private static final Logger logger = LoggerFactory.getLogger(JahiaOAuthServiceImpl.class);
+    private static final String HTTPS_PREFIX = "https://";
+    private static final String UNSIGNED_ALG = "none";
 
     private final Map<String, JahiaOAuthAPIBuilder> oAuthDefaultApi20Map;
 
     @Reference
     private JahiaAuthMapperService jahiaAuthMapperService;
+
+    // Absent until a deployment writes the PID: the config component is ConfigurationPolicy.REQUIRE.
+    // S3077 suppressed: Declarative Services swaps the whole reference, so visibility is the guarantee needed.
+    @SuppressWarnings("java:S3077")
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+    private volatile JahiaOAuthConfiguration jahiaOAuthConfiguration;
 
     public JahiaOAuthServiceImpl() {
         this.oAuthDefaultApi20Map = new ConcurrentHashMap<>();
@@ -144,6 +157,10 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         List<String> urlsToProcess = connectorService.getProtectedResourceUrls(config);
 
         for (String url : urlsToProcess) {
+            if (requireSecureEndpoints(jahiaOAuthConfiguration)) {
+                requireSecureEndpoint(url);
+            }
+
             // Request all the properties available right now
             OAuthRequest request = new OAuthRequest(Verb.GET, url);
             request.addHeader("x-li-format", "json");
@@ -197,7 +214,7 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         }
     }
 
-    private Map<String, Object> extractAccessTokenData(OAuth2AccessToken accessToken) {
+    Map<String, Object> extractAccessTokenData(OAuth2AccessToken accessToken) {
         Map<String, Object> tokenData = new HashMap<>();
 
         tokenData.put(JahiaOAuthConstants.ACCESS_TOKEN, accessToken.getAccessToken());
@@ -206,9 +223,49 @@ public class JahiaOAuthServiceImpl implements JahiaOAuthService {
         tokenData.put(JahiaOAuthConstants.TOKEN_SCOPE, accessToken.getScope());
         tokenData.put(JahiaOAuthConstants.TOKEN_TYPE, accessToken.getTokenType());
         if (accessToken instanceof OpenIdOAuth2AccessToken) {
-            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken());
+            String openIdToken = ((OpenIdOAuth2AccessToken) accessToken).getOpenIdToken();
+            refuseUnsignedJws(openIdToken);
+            tokenData.put(JahiaOAuthConstants.OPEN_ID_TOKEN, openIdToken);
         }
         return tokenData;
+    }
+
+    static boolean requireSecureEndpoints(JahiaOAuthConfiguration config) {
+        return config == null || config.isRequireSecureEndpoints();
+    }
+
+    static void requireSecureEndpoint(String url) {
+        if (!StringUtils.startsWithIgnoreCase(url, HTTPS_PREFIX)) {
+            throw new IllegalArgumentException("Connector endpoint must use https: " + url);
+        }
+    }
+
+    static void refuseUnsignedJws(String openIdToken) {
+        if (StringUtils.isBlank(openIdToken)) {
+            return;
+        }
+        String[] segments = openIdToken.split("\\.", -1);
+        // A token that is not a three-part JWS is out of scope: an encrypted or opaque token says
+        // nothing about its own signature, and refusing it would break a working deployment.
+        if (segments.length != 3) {
+            return;
+        }
+        if (StringUtils.isBlank(segments[2])) {
+            throw new IllegalArgumentException("OpenID token carries no signature");
+        }
+        String alg = readAlg(segments[0]);
+        if (StringUtils.isBlank(alg) || UNSIGNED_ALG.equalsIgnoreCase(alg)) {
+            throw new IllegalArgumentException("OpenID token declares no signature algorithm");
+        }
+    }
+
+    private static String readAlg(String encodedHeader) {
+        try {
+            String header = new String(Base64.getUrlDecoder().decode(encodedHeader), StandardCharsets.UTF_8);
+            return new JSONObject(header).optString("alg");
+        } catch (IllegalArgumentException | JSONException e) {
+            throw new IllegalArgumentException("OpenID token header is unreadable", e);
+        }
     }
 
     /**
