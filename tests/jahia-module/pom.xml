@@ -87,6 +87,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>jahia-maven-central</id>
+            <name>Jahia Maven Central Repository</name>
+            <url>https://maven.jahia.com/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>oauth-snapshots</id>
             <name>Jahia OAuth Snapshots</name>
             <url>https://devtools.jahia.com/nexus/content/repositories/oauth-snapshots/</url>
