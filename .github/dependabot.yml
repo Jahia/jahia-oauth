@@ -2,7 +2,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/tests"
     schedule:
       interval: "daily"
     allow:
